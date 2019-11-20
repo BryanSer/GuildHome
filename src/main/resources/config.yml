@@ -1,0 +1,11 @@
+Mysql:
+    host: 127.0.0.1
+    port: 3306
+    database: mc
+    user: root
+    password: 123
+    options:
+        - 'useUnicode=true'
+        - 'characterEncoding=utf-8'
+        - 'autoReconnect=true'
+        - 'rewriteBatchedStatements=true'
