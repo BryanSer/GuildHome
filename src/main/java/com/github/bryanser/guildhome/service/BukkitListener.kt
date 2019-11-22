@@ -12,6 +12,9 @@ class BukkitListener : PluginMessageListener {
             val json = StringManager.fromJson(String(message))
             val service = json["Service"] as String
             val ser = Service.services[service] ?: return
+            if(ser.bukkitSend){
+                throw IllegalStateException("这个数据包只能由Bungee接收")
+            }
             ser.onReceive(json)
         }
     }

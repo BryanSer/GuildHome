@@ -16,7 +16,7 @@ object CreateGuildService : Service(
     override fun onReceive(data: Map<String, Any>) {
         val name = data["Name"] as String
         val player = data["Player"] as String
-        val p = BungeeMain.Plugin.proxy.getPlayer(name) ?: return
+        val p = BungeeMain.Plugin.proxy.getPlayer(player) ?: return
         async {
             val pi = GuildManager.getMember(p.uniqueId)
             if (pi != null) {
@@ -30,9 +30,9 @@ object CreateGuildService : Service(
             }
             val (id, reason) = GuildSetManager.createGuild(name, p.uniqueId)
             if (id == null) {
-                p.sendMsg("§c无法创建${name}公会, $reason")
+                p.sendSyncMsg("§c无法创建${name}公会, $reason")
             } else {
-                p.sendMsg("§6公会创建成功: ID-$id")
+                p.sendSyncMsg("§6公会创建成功: ID-$id")
             }
         }
     }

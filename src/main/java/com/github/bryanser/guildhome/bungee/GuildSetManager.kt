@@ -17,12 +17,23 @@ object GuildSetManager {
             ps.setString(1, player.toString())
             ps.executeUpdate()
             val ps2 = this.prepareStatement(
-                    "INSERT INTO ${DatabaseHandler.TABLE_GUILD_MEMBER} VALUES (?, ?, ?)"
+                    "INSERT INTO ${DatabaseHandler.TABLE_GUILD_MEMBER} (NAME,GID,CAREER) VALUES (?, ?, ?)"
             )
             ps2.setString(1, player.toString())
             ps2.setInt(2, gid)
             ps2.setString(3, career.name)
             ps2.executeUpdate()
+        }
+    }
+
+    fun removeMember(player: UUID, gid: Int) {
+        DatabaseHandler.sql {
+            val ps = this.prepareStatement(
+                    "DELETE FROM ${DatabaseHandler.TABLE_GUILD_MEMBER} WHERE NAME = ? AND GID = ?"
+            )
+            ps.setString(1, player.toString())
+            ps.setInt(2, gid)
+            ps.executeUpdate()
         }
     }
 
@@ -40,6 +51,27 @@ object GuildSetManager {
         }
     }
 
+    fun <T> updateGuild(gid: Int, key: Key<T>, value: T) {
+        DatabaseHandler.sql {
+            val ps = this.prepareStatement(
+                    "UPDATE ${DatabaseHandler.TABLE_GUILDHOME} SET ${key.name} = ? WHERE ID = ? LIMIT 1"
+            )
+            key.setter(ps, 1, value)
+            ps.setInt(2, gid)
+            ps.executeUpdate()
+        }
+    }
+
+    fun <T> updateMember(gid: Int, uuid: UUID, key: Key<T>, value: T) {
+        DatabaseHandler.sql {
+            val ps = this.prepareStatement("UPDATE ${DatabaseHandler.TABLE_GUILD_MEMBER} SET ${key.name} = ? WHERE GID = ? AND NAME = ? LIMIT 1")
+            key.setter(ps, 1, value)
+            ps.setInt(2, gid)
+            ps.setString(3, uuid.toString())
+            ps.executeUpdate()
+        }
+    }
+
 
     fun createGuild(name: String, owner: UUID): Pair<Int?, String?> {
         DatabaseHandler.select("SELECT ID FROM ${DatabaseHandler.TABLE_GUILDHOME} WHERE NAME = ?") {
@@ -50,7 +82,7 @@ object GuildSetManager {
             }
         }
         val pi = GuildManager.getMember(owner)
-        if(pi != null){
+        if (pi != null) {
             return null to "你已经有公会了"
         }
         DatabaseHandler.sql {
@@ -71,15 +103,15 @@ object GuildSetManager {
                 return null to "发生未知错误"
             }
         }
-        if(id != -1){
-            DatabaseHandler.sql{
-                val ps = this.prepareStatement("INSERT INTO ${DatabaseHandler.TABLE_GUILD_MEMBER} VALUES (?, ?, ?)")
+        if (id != -1) {
+            DatabaseHandler.sql {
+                val ps = this.prepareStatement("INSERT INTO ${DatabaseHandler.TABLE_GUILD_MEMBER} (NAME,GID,CAREER) VALUES (?, ?, ?)")
                 ps.setString(1, owner.toString())
                 ps.setInt(2, id)
                 ps.setString(3, Career.PRESIDENT.name)
                 ps.executeUpdate()
             }
-        }else{
+        } else {
             return null to "发生未知错误"
         }
         return id to null

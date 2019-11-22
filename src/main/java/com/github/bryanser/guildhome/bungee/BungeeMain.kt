@@ -15,6 +15,7 @@ class BungeeMain : Plugin() {
     override fun onEnable() {
         Plugin = this
         connectSQL()
+        register()
     }
 
     fun register() {

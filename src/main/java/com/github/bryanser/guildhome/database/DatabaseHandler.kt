@@ -9,6 +9,7 @@ import java.sql.ResultSet
 object DatabaseHandler {
     const val TABLE_GUILDHOME = "GuildHome"
     const val TABLE_GUILD_MEMBER = "GuildMember"
+    const val TABLE_GUILD_APPLY = "GuildApply"
 
 
     class Selecting(
@@ -62,7 +63,7 @@ object DatabaseHandler {
                 CREATE TABLE IF NOT EXISTS GuildHome(
                     ID INT PRIMARY KEY AUTO_INCREMENT,
                     NAME VARCHAR(30) NOT NULL,
-                    LEVEL INT NOT NULL DEFAULT 0,
+                    LEVEL INT NOT NULL DEFAULT 1,
                     CONTRIBUTION INT NOT NULL DEFAULT 0,
                     MOTD TEXT NOT NULL,
                     ICON TEXT DEFAULT NULL
@@ -73,20 +74,31 @@ object DatabaseHandler {
                     NAME VARCHAR(80) NOT NULL PRIMARY KEY,
                     GID INT NOT NULL,
                     CAREER VARCHAR(15) NOT NULL DEFAULT 'MEMBER',
+                    CONTRIBUTION INT NOT NULL DEFAULT 0,
                     FOREIGN KEY (GID) REFERENCES GuildHome(ID)
                 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4
+            """)
+            sta.execute("""
+               CREATE TABLE IF NOT EXISTS GuildApply(
+                    NAME VARCHAR(80) NOT NULL,
+                    GID INT NOT NULL,
+                    TIME LONG NOT NULL,
+                    PRIMARY KEY (NAME,GID),
+                    FOREIGN KEY (GID) REFERENCES GuildHome(ID)
+               ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4
             """)
             sta.close()
         }
     }
 
 
-    inline fun sql(func: Connection.() -> Unit) {
+    inline fun sql(debug: Boolean = true, func: Connection.() -> Unit) {
         val conn = pool.connection
         try {
             conn.func()
         } catch (e: Throwable) {
-            e.printStackTrace()
+            if (debug)
+                e.printStackTrace()
         } finally {
             pool.evictConnection(conn)
         }

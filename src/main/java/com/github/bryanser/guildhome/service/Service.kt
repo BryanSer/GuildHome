@@ -4,6 +4,7 @@ import com.github.bryanser.guildhome.Channel
 import com.github.bryanser.guildhome.StringManager
 import com.github.bryanser.guildhome.bukkit.BukkitMain
 import com.github.bryanser.guildhome.bungee.BungeeMain
+import com.github.bryanser.guildhome.service.impl.*
 import net.md_5.bungee.api.chat.TextComponent
 import net.md_5.bungee.api.connection.ProxiedPlayer
 import org.bukkit.Bukkit
@@ -30,6 +31,17 @@ abstract class Service(
     companion object {
         val services = mutableMapOf<String, Service>()
         var bukkit: Boolean = false
+
+        init{
+            services[ApplyMemberService.name]  = ApplyMemberService
+            services[BroadcastMessageService.name] = BroadcastMessageService
+            services[CreateGuildService.name] = CreateGuildService
+            services[KickMemberService.name] = KickMemberService
+            services[SetGuildIconService.name] = SetGuildIconService
+            services[SetGuildMotdService.name]  = SetGuildMotdService
+            services[SetMemberCareerService.name] = SetMemberCareerService
+        }
+
         fun async(func: () -> Unit) {
             if (bukkit) {
                 Bukkit.getScheduler().runTaskAsynchronously(BukkitMain.Plugin, func)
@@ -66,8 +78,11 @@ abstract class Service(
             return UUID.fromString(this)
         }
 
-        fun ProxiedPlayer.sendMsg(msg: String) {
-            this.sendMessage(*TextComponent.fromLegacyText(msg))
+        inline fun ProxiedPlayer.sendSyncMsg(vararg msg: String) {
+            sync {
+                for (s in msg)
+                    this.sendMessage(*TextComponent.fromLegacyText(s))
+            }
         }
     }
 }

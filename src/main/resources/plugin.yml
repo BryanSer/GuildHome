@@ -1,3 +1,10 @@
 name: GuildHome
 version: ${project.version}
 main: com.github.bryanser.guildhome.bukkit.BukkitMain
+depend: [BrAPI,ProtocolLib]
+commands:
+    GuildHome:
+        aliases: [gh]
+        usage: |
+            §6/<command> >> 打开UI
+            §6/<command>> create [公会名] >> 创建公会(测试版不需要支付费用)

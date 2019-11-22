@@ -13,7 +13,11 @@ class BungeeListener : Listener {
             val json = StringManager.fromJson(String(evt.data))
             val service = json["Service"] as String
             val ser = Service.services[service] ?: return
+            if(!ser.bukkitSend){
+                throw IllegalStateException("这个数据包只能由Bukkit接收")
+            }
             ser.onReceive(json)
+            evt.isCancelled = true
         }
     }
 }
