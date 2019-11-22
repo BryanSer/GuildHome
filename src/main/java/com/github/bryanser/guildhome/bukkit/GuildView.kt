@@ -14,6 +14,7 @@ import com.github.bryanser.guildhome.bukkit.util.SignUtils
 import com.github.bryanser.guildhome.database.Career
 import com.github.bryanser.guildhome.service.impl.*
 import org.bukkit.Bukkit
+import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
@@ -26,11 +27,11 @@ import java.util.*
 object GuildView {
     val defaultIcon: ItemStack = ItemBuilder.createItem(Material.DIAMOND) {}
         get() = field.clone()
-    val unready: ItemStack = ItemBuilder.createItem(Material.REDSTONE_BLOCK) {
+    val unready: ItemStack = ItemBuilder.createItem(Material.STAINED_GLASS_PANE) {
         name("§cLoading...")
     }
         get() = field.clone()
-    val noGuild: ItemStack = ItemBuilder.createItem(Material.GLASS) {
+    val noGuild: ItemStack = ItemBuilder.createItem(Material.STAINED_GLASS_PANE, durability = 4) {
         name("§c你还没有属于任何公会")
     }
         get() = field.clone()
@@ -104,10 +105,10 @@ object GuildView {
                     applySize = GuildManager.getApplySize(guild.id)
                 }
                 init = true
-                Bukkit.getScheduler().runTask(BukkitMain.Plugin) {
-                    KViewHandler.updateUI(p)
-                }
                 ignoreClick = false
+                Bukkit.getScheduler().runTaskLater(BukkitMain.Plugin, {
+                    KViewHandler.updateUI(p)
+                }, 5)
             }
         }
 
@@ -130,7 +131,7 @@ object GuildView {
 
     val view: KViewBuilder<GuildViewContext> by lazy {
         KViewHandler.createKView("GuildView", 6, ::GuildViewContext) {
-            icon(6) {
+            icon(4) {
                 display {
                     val icon = loadIcon(guild.icon)
                     ItemBuilder.createItem(icon.type, icon.amount, icon.durability.toInt()) {
@@ -166,7 +167,9 @@ object GuildView {
                     Bukkit.getScheduler().runTask(BukkitMain.Plugin) {
                         player.closeInventory()
                         SignUtils.getSignUtils().sendSignRequest(player, msg) { p, s ->
-                            SetGuildMotdService.setMotd(guild.id, Array(4) { s.getOrElse(it) { "" } }, p)
+                            SetGuildMotdService.setMotd(guild.id, Array(4) {
+                                ChatColor.translateAlternateColorCodes('&', s.getOrElse(it) { "" })
+                            }, p)
                         }
                     }
                 }
@@ -193,10 +196,6 @@ object GuildView {
                         val m = members[career]?.getOrNull(index) ?: return@display null
                         ItemBuilder.createItem(Material.SKULL_ITEM, durability = 3) {
                             val p = Bukkit.getOfflinePlayer(m.uuid)
-                            if (p == null) {
-                                name("找不到头像: ${m.uuid}")
-                                return@createItem
-                            }
                             name("${m.career.display}: ${p.name}")
                             lore {
                                 +"§6贡献值: ${m.contribution}"
@@ -219,7 +218,7 @@ object GuildView {
                             }
                             onBuild {
                                 val im = itemMeta as SkullMeta
-                                im.owningPlayer = p
+                                im.owner = p?.name ?: return@onBuild this
                                 itemMeta = im
                                 this
                             }
@@ -375,9 +374,9 @@ object GuildView {
                         ?: throw IllegalStateException("找不到公会数据 数据库约束失败")
                 apply.addAll(GuildManager.getApplys(guild.id))
                 init = true
-                Bukkit.getScheduler().runTask(BukkitMain.Plugin) {
+                Bukkit.getScheduler().runTaskLater(BukkitMain.Plugin, {
                     KViewHandler.updateUI(p)
-                }
+                }, 5)
                 ignoreClick = false
             }
         }
@@ -400,11 +399,8 @@ object GuildView {
                     display2 {
                         val (uuid, time) = apply.getOrNull(i + page * 45) ?: return@display2 null
                         val p = Bukkit.getOfflinePlayer(uuid)
-                                ?: return@display2 ItemBuilder.createItem(Material.SKULL_ITEM) {
-                                    name("找不到头像")
-                                }
                         ItemBuilder.createItem(Material.SKULL_ITEM, durability = 3) {
-                            name("§a玩家: ${p.name}")
+                            name("§a玩家: ${p?.name ?: "找不到名字"}")
                             lore {
                                 +"§a申请日期: ${dateFormat.format(Date(time))}"
                                 +"  "
@@ -413,7 +409,7 @@ object GuildView {
                             }
                             onBuild {
                                 val im = itemMeta as SkullMeta
-                                im.owningPlayer = p
+                                im.owner = p.name ?: return@onBuild this
                                 itemMeta = im
                                 this
                             }
@@ -425,13 +421,15 @@ object GuildView {
                         }
                         val (uuid, _) = apply.getOrNull(i + page * 45) ?: return@click
                         ApplyMemberService.acceptApply(guild.id, uuid, player, true)
+                        laterReload(player, 20)
                     }
                     click(ClickType.RIGHT) {
                         if (ignoreClick) {
                             return@click
                         }
                         val (uuid, _) = apply.getOrNull(i + page * 45) ?: return@click
-                        ApplyMemberService.acceptApply(guild.id, uuid, player, true)
+                        ApplyMemberService.acceptApply(guild.id, uuid, player, false)
+                        laterReload(player, 20)
                     }
                 }
             }

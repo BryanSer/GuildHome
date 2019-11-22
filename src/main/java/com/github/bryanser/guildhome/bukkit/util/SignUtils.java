@@ -47,7 +47,6 @@ public class SignUtils {
             blockChange.getBlockPositionModifier().write(0, new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
             blockChange.getBlockData().write(0, WrappedBlockData.createData(Material.SIGN_POST, 0));
         } catch (Throwable e) {
-            e.printStackTrace();
             blockChange.getIntegers().write(0, loc.getBlockX());
             blockChange.getIntegers().write(1, loc.getBlockY());
             blockChange.getIntegers().write(2, loc.getBlockZ());
@@ -76,11 +75,15 @@ public class SignUtils {
 //                WrappedChatComponent.fromText(lines[3])
 //            });
         } catch (Throwable e) {
-            e.printStackTrace();
             updateSign.getIntegers().write(0, loc.getBlockX());
             updateSign.getIntegers().write(1, loc.getBlockY());
             updateSign.getIntegers().write(2, loc.getBlockZ());
-            updateSign.getStringArrays().write(0, lines);
+
+            NbtCompound nc = NbtFactory.ofCompound("tag");
+            nc.put("Text1",  WrappedChatComponent.fromText(lines[0]).getJson());
+            nc.put("Text2",  WrappedChatComponent.fromText(lines[1]).getJson());
+            nc.put("Text3",  WrappedChatComponent.fromText(lines[2]).getJson());
+            nc.put("Text4",  WrappedChatComponent.fromText(lines[3]).getJson());
         }
         try {
             manager.sendServerPacket(p, updateSign);

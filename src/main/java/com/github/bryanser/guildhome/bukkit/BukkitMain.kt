@@ -5,6 +5,7 @@ import com.github.bryanser.guildhome.Channel
 import com.github.bryanser.guildhome.database.DatabaseHandler
 import com.github.bryanser.guildhome.service.BukkitListener
 import com.github.bryanser.guildhome.service.Service
+import com.github.bryanser.guildhome.service.impl.ApplyService
 import com.github.bryanser.guildhome.service.impl.CreateGuildService
 import com.zaxxer.hikari.HikariConfig
 import org.bukkit.Bukkit
@@ -67,9 +68,14 @@ class BukkitMain : JavaPlugin() {
             KViewHandler.openUI(sender, GuildView.view)
             return true
         }
-        if(args[0].equals("create",true)){
+        if (args[0].equals("create", true)) {
             val name = args[1]
             CreateGuildService.createGuild(name, sender)
+            return true
+        }
+        if (args[0].equals("apply", true)) {
+            val name = args[1]
+            ApplyService.apply(name, sender)
             return true
         }
         return false

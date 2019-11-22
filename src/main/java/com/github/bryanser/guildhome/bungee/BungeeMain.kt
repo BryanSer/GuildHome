@@ -6,6 +6,7 @@ import com.github.bryanser.guildhome.service.BungeeListener
 import com.zaxxer.hikari.HikariConfig
 import net.md_5.bungee.api.connection.ProxiedPlayer
 import net.md_5.bungee.api.plugin.Plugin
+import net.md_5.bungee.api.scheduler.GroupedThreadFactory
 import net.md_5.bungee.config.ConfigurationProvider
 import net.md_5.bungee.config.YamlConfiguration
 import java.io.*
@@ -49,10 +50,19 @@ class BungeeMain : Plugin() {
         }
         val config = HikariConfig()
         config.jdbcUrl = sb.toString()
+        try{
+            config.threadFactory = GroupedThreadFactory(this,"Hikari Thread Factory")
+        }catch(t:Throwable){
+            val con = GroupedThreadFactory::class.java.getConstructor(net.md_5.bungee.api.plugin.Plugin::class.java)
+            val gtf = con.newInstance(this)
+            config.threadFactory = gtf
+        }
+
         DatabaseHandler.init(config)
     }
 
     fun saveResource(plugin: Plugin, path: String, file: File) {
+        file.createNewFile()
         val data = plugin.getResourceAsStream(path)
         val writer = BufferedWriter(FileWriter(file))
         val reader = BufferedReader(InputStreamReader(data))
