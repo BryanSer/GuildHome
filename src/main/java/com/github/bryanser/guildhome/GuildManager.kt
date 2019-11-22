@@ -137,7 +137,7 @@ object GuildManager {
         DatabaseHandler.sql(true) {
             val ps = this.prepareStatement("DELETE FROM ${DatabaseHandler.TABLE_GUILD_APPLY} WHERE NAME = ?")
             ps.setString(1, uuid.toString())
-            ps.executeQuery()
+            ps.executeUpdate()
             GuildSetManager.setMember(uuid, gid, Career.MEMBER)
         }
         return "§6请求同意成功"
@@ -149,7 +149,7 @@ object GuildManager {
             DatabaseHandler.sql(false) {
                 val ps = this.prepareStatement("DELETE FROM ${DatabaseHandler.TABLE_GUILD_APPLY} WHERE NAME = ?")
                 ps.setString(1, uuid.toString())
-                ps.executeQuery()
+                ps.executeUpdate()
             }
             return "§c请求处理失败: 对方已经加入了别的公会"
         }

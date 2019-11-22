@@ -8,7 +8,7 @@ import org.bukkit.entity.Player
 import java.util.*
 
 object ApplyMemberService : Service(
-        "accpet apply member",
+        "accept apply member",
         true
 ) {
     override fun onReceive(data: Map<String, Any>) {
