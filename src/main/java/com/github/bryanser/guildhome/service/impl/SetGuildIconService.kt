@@ -15,7 +15,7 @@ object SetGuildIconService : Service(
     override fun onReceive(data: Map<String, Any>) {
         val player = data["Player"] as String
         val p = BungeeMain.Plugin.proxy.getPlayer(player) ?: return
-        val gid = data["Gid"] as Int
+        val gid = data["Gid"].asInt()
         async {
             val guild = GuildManager.getGuild(gid) ?: return@async
             val ginfo = GuildManager.getMember(p.uniqueId) ?: return@async

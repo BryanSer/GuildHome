@@ -11,7 +11,7 @@ object BroadcastMessageService : Service(
         true
 ) {
     override fun onReceive(data: Map<String, Any>) {
-        val gid = data["Gid"] as Int
+        val gid = data["Gid"].asInt()
         val msg = data["Message"] as Array<String>
         broadcastBungee(gid, msg)
     }

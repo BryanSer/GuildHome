@@ -25,21 +25,27 @@ abstract class Service(
         data["SendID"] = UUID.randomUUID().toString()
         data["Service"] = name
         val json = StringManager.toJson(data)
+        if (DEBUG) {
+            Bukkit.getLogger().info("DEBUG-发送json: $json")
+            Bukkit.getLogger().info("DEBUG-发送服务名: $name")
+        }
         Channel.sendProxy(json, p)
     }
 
     companion object {
+        const val DEBUG = true
         val services = mutableMapOf<String, Service>()
         var bukkit: Boolean = false
 
-        init{
-            services[ApplyMemberService.name]  = ApplyMemberService
+        init {
+            services[ApplyMemberService.name] = ApplyMemberService
             services[BroadcastMessageService.name] = BroadcastMessageService
             services[CreateGuildService.name] = CreateGuildService
             services[KickMemberService.name] = KickMemberService
             services[SetGuildIconService.name] = SetGuildIconService
-            services[SetGuildMotdService.name]  = SetGuildMotdService
+            services[SetGuildMotdService.name] = SetGuildMotdService
             services[SetMemberCareerService.name] = SetMemberCareerService
+            services[ApplyService.name] = ApplyService
         }
 
         fun async(func: () -> Unit) {
@@ -83,6 +89,10 @@ abstract class Service(
                 for (s in msg)
                     this.sendMessage(*TextComponent.fromLegacyText(s))
             }
+        }
+
+        inline fun Any?.asInt(): Int {
+            return (this as Number).toInt()
         }
     }
 }

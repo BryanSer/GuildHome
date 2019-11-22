@@ -72,7 +72,16 @@ object GuildManager {
         return list
     }
 
-    fun addApply(gid: Int, from: UUID) {
+    fun addApply(gid: Int, from: UUID):String {
+        DatabaseHandler.sql{
+            val ps = this.prepareStatement("SELECT * FROM ${DatabaseHandler.TABLE_GUILD_APPLY} WHERE GID = ? AND NAME = ?")
+            ps.setInt(1,gid)
+            ps.setString(2,from.toString())
+            val rs = ps.executeQuery()
+            if(rs.next()){
+                return "§c申请失败, 你已经申请过了"
+            }
+        }
         DatabaseHandler.sql {
             val ps = this.prepareStatement("INSERT INTO ${DatabaseHandler.TABLE_GUILD_APPLY} VALUES (?, ?, ?)")
             ps.setString(1, from.toString())
@@ -80,6 +89,8 @@ object GuildManager {
             ps.setLong(3, System.currentTimeMillis())
             ps.executeUpdate()
         }
+
+        return "§6申请成功"
     }
 
     fun getApplySize(gid: Int): Int {
@@ -123,7 +134,7 @@ object GuildManager {
         if (size >= Guild.getMaxMemberSize(guild.level)) {
             return "§c请求处理失败: 公会人数已满"
         }
-        DatabaseHandler.sql(false) {
+        DatabaseHandler.sql(true) {
             val ps = this.prepareStatement("DELETE FROM ${DatabaseHandler.TABLE_GUILD_APPLY} WHERE NAME = ?")
             ps.setString(1, uuid.toString())
             ps.executeQuery()

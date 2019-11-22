@@ -16,7 +16,7 @@ object SetMemberCareerService : Service(
     override fun onReceive(data: Map<String, Any>) {
         val player = data["Player"] as String
         val p = BungeeMain.Plugin.proxy.getPlayer(player) ?: return
-        val gid = data["Gid"] as Int
+        val gid = data["Gid"].asInt()
         val target = UUID.fromString(data["Target"] as String)!!
         val career = Career.valueOf(data["Career"] as String)
         async {

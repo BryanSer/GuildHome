@@ -56,7 +56,9 @@ object CreateGuildService : Service(
             val data = mutableMapOf<String, Any>()
             data["Name"] = name
             data["Player"] = from.name
-            this.sendData(data, from)
+            sync{
+                this.sendData(data, from)
+            }
         }
     }
 }

@@ -54,6 +54,7 @@ object DatabaseHandler {
         config.validationTimeout = 3000
         config.maxLifetime = 60000
         pool = HikariDataSource(config)
+        createTable()
     }
 
     fun createTable() {

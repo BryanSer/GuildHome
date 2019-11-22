@@ -10,7 +10,7 @@ object KickMemberService : Service(
         true
 ) {
     override fun onReceive(data: Map<String, Any>) {
-        val gid = data["Gid"] as Int
+        val gid = data["Gid"].asInt()
         val target = UUID.fromString(data["Target"] as String)
         GuildSetManager.removeMember(target, gid)
 

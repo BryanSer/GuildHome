@@ -8,3 +8,4 @@ commands:
         usage: |
             §6/<command> >> 打开UI
             §6/<command>> create [公会名] >> 创建公会(测试版不需要支付费用)
+            §6/<command> apply [公会] >> 申请加入公会
