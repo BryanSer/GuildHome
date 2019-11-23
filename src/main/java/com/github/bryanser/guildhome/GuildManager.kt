@@ -153,12 +153,12 @@ object GuildManager {
             }
             return "§c请求处理失败: 对方已经加入了别的公会"
         }
-        val guild = this.getGuild(gid) ?: return "§c请求处理失败: 找不到公会"
+         this.getGuild(gid) ?: return "§c请求处理失败: 找不到公会"
         DatabaseHandler.sql(false) {
             val ps = this.prepareStatement("DELETE FROM ${DatabaseHandler.TABLE_GUILD_APPLY} WHERE NAME = ? AND GID = ?")
             ps.setString(1, uuid.toString())
             ps.setInt(2, gid)
-            ps.executeQuery()
+            ps.executeUpdate()
         }
         return "§6请求拒绝成功"
     }

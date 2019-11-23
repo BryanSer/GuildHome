@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.github.bryanser.guildhome.bungee
 
 import com.github.bryanser.guildhome.Channel

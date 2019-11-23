@@ -12,16 +12,13 @@ object BroadcastMessageService : Service(
 ) {
     override fun onReceive(data: Map<String, Any>) {
         val gid = data["Gid"].asInt()
-        val msg = data["Message"] as Array<String>
-        broadcastBungee(gid, msg)
+        val msg = data["Message"] as List<String>
+        broadcastBungee(gid, msg.toTypedArray())
     }
 
     fun broadcast(gid: Int, from: Any, vararg msg: String) {
         if (!bukkit) {
             broadcastBungee(gid, msg)
-            return
-        }
-        if (from !is Player) {
             return
         }
         val data = mutableMapOf<String, Any>()

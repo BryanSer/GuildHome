@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.github.bryanser.guildhome.bukkit
 
 import com.comphenix.protocol.utility.StreamSerializer
@@ -25,6 +27,10 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object GuildView {
+    const val KICK_NUM = 9
+    const val VP_NUM = 1
+    const val MANANGER_NUM = 2
+
     val defaultIcon: ItemStack = ItemBuilder.createItem(Material.DIAMOND) {}
         get() = field.clone()
     val unready: ItemStack = ItemBuilder.createItem(Material.STAINED_GLASS_PANE) {
@@ -32,11 +38,11 @@ object GuildView {
     }
         get() = field.clone()
     val noGuild: ItemStack = ItemBuilder.createItem(Material.STAINED_GLASS_PANE, durability = 4) {
-        name("§c你还没有属于任何公会")
+        name("§c§l你不在任何公会哦,快申请加入一个吧")
     }
         get() = field.clone()
 
-    class GuildViewContext(p: Player) : KViewContext("§6公会菜单") {
+    class GuildViewContext(p: Player) : KViewContext("§5§l楼楼公会") {
         @Volatile
         var init: Boolean = false
         @Volatile
@@ -46,12 +52,12 @@ object GuildView {
         val members = mutableMapOf<Career, MutableList<Member>>()
         lateinit var self: Member
         var page: Int = 0
-        val vpSize: Int by lazy {
-            (members[Career.VP]?.size ?: 0) + 1
-        }
-        val managerSize: Int by lazy {
-            (members[Career.MANAGER]?.size ?: 0) + vpSize
-        }
+        val vpSize: Int
+            get() = (members[Career.VP]?.size ?: 0) + 1
+
+        val managerSize: Int
+            get() = (members[Career.MANAGER]?.size ?: 0) + vpSize
+
         var applySize: Int = 0
 
         fun laterReload(p: Player, later: Long) {
@@ -97,7 +103,7 @@ object GuildView {
                 }
                 self = ginfo
                 guild = GuildManager.getGuild(ginfo.gid)
-                        ?: throw IllegalStateException("找不到公会数据 数据库约束失败")
+                        ?: throw IllegalStateException("§4§l找不到公会数据,数据库读取失败")
                 for (m in GuildManager.getMembers(ginfo.gid)) {
                     members.getOrPut(m.career) { mutableListOf() }.add(m)
                 }
@@ -135,20 +141,20 @@ object GuildView {
                 display {
                     val icon = loadIcon(guild.icon)
                     ItemBuilder.createItem(icon.type, icon.amount, icon.durability.toInt()) {
-                        name("§b§l公会: ${guild.name}")
+                        name("§b§l你的公会: ${guild.name}")
                         lore {
-                            +"§a公会总贡献值: ${guild.contribution}"
-                            +"§6公会等级: ${guild.level}"
-                            +"§c职位: ${self.career.display}"
-                            +"§a公会信息: "
+                            +"§a§l公会总贡献值: ${guild.contribution}"
+                            +"§6§l公会等级: ${guild.level}"
+                            +"§c§l你的职位: ${self.career.display}"
+                            +"§e§l公会信息: "
                             for (motd in guild.motd.split("\n")) {
                                 +motd
                             }
                             if (self.career >= Career.MANAGER) {
                                 +" "
-                                +"§4§l===管理==="
-                                +"§4shift+右键设定公会图标为手上物品"
-                                +"§4shift+左键设定公会信息"
+                                +"§3§l=========公会基本管理========="
+                                +"§f按shift+右键 §3§l设置手持物品为公会图标"
+                                +"§f按shift+左键 §3§l在木牌填写设置公会信息"
                             }
                         }
                     }
@@ -182,7 +188,7 @@ object GuildView {
                     }
                     val item = player.itemInHand
                     if (item == null || item.type == Material.AIR || item.amount == 0) {
-                        player.sendMessage("§c你的手上毛都没有")
+                        player.sendMessage("§c§l你的手上没有任何物品哦")
                         return@click
                     }
                     val icon = saveIcon(item)
@@ -198,21 +204,21 @@ object GuildView {
                             val p = Bukkit.getOfflinePlayer(m.uuid)
                             name("${m.career.display}: ${p.name}")
                             lore {
-                                +"§6贡献值: ${m.contribution}"
+                                +"§6§l该玩家贡献值: §a§l${m.contribution}"
                                 if (self.career >= Career.MANAGER) {
                                     +" "
-                                    +"§4§l===管理==="
-                                    if (m.career == Career.MEMBER) {
-                                        +"§c数字1键踢出成员"
+                                    +"§3§l=========公会基本管理========="
+                                    if (m.career < self.career) {
+                                        +"§c按下数字键 §6${KICK_NUM} §c踢出成员"
                                     }
                                     if (self.career == Career.PRESIDENT) {
-                                        +"§c§l数字2键任命或取消副会长"
-                                        +"§c§l数字3键任命或取消管理员"
-                                        +"§4注意 只能有两位副会长与五位管理员"
+                                        +"§d按下数字键 §6${VP_NUM} §d任命/取消副会长"
+                                        +"§d按下数字键 §6${MANANGER_NUM} §d任命/取消管理员"
+                                        +"§c§l[只能有两位副会长与五位管理员]"
                                     }
                                     if (self.career == Career.VP) {
-                                        +"§c§l数字3键任命或取消管理员"
-                                        +"§4注意 只能有五位管理员"
+                                        +"§d按下数字键 §6${MANANGER_NUM} §d任命/取消管理员"
+                                        +"§c§l[只能有五位管理员]"
                                     }
                                 }
                             }
@@ -225,6 +231,7 @@ object GuildView {
                         }
                     }
                     number { number ->
+                        val num = number + 1
                         if (ignoreClick) {
                             return@number
                         }
@@ -240,35 +247,35 @@ object GuildView {
                             return@number
                         }
                         val p = Bukkit.getOfflinePlayer(m.uuid) ?: return@number
-                        if (self.career == Career.PRESIDENT && number == 1) {
+                        if (self.career == Career.PRESIDENT && num == VP_NUM) {
                             if (m.career == Career.VP) {
-                                player.sendMessage("§6正在撤销对方的副会长职位")
+                                player.sendMessage("§4§l你正在撤销对方的副会长职位")
                                 SetMemberCareerService.setMemberCareer(guild.id, m.uuid, Career.MEMBER, player)
                             } else {
                                 val size = this.members[Career.VP]?.size ?: 0
                                 if (size >= 2) {
-                                    player.sendMessage("§c无法任命, 公会里已经有两位副会长了")
+                                    player.sendMessage("§e§l你无法任命更多副会长,公会里已经有两位副会长了")
                                     return@number
                                 }
-                                player.sendMessage("§6正在任命对方的副会长职位")
+                                player.sendMessage("§4§l你正在任命对方为你公会的副会长")
                                 SetMemberCareerService.setMemberCareer(guild.id, m.uuid, Career.VP, player)
                             }
-                        } else if (self.career >= Career.VP && number == 2) {
+                        } else if (self.career >= Career.VP && num == MANANGER_NUM) {
                             if (m.career == Career.MANAGER) {
-                                player.sendMessage("§6正在撤销对方的管理员职位")
+                                player.sendMessage("§4§l你正在撤销对方的管理员职位")
                                 SetMemberCareerService.setMemberCareer(guild.id, m.uuid, Career.MEMBER, player)
                             }
                             val size = this.members[Career.MANAGER]?.size ?: 0
                             if (size >= 5) {
-                                player.sendMessage("§c无法任命, 公会里已经有五位管理员了")
+                                player.sendMessage("§e§l你无法任命更多管理员,公会里已经有五位管理员了")
                                 return@number
                             }
-                            player.sendMessage("§6正在任命对方的管理员职位")
+                            player.sendMessage("§4§l你正在任命对方为你公会的管理员")
                             SetMemberCareerService.setMemberCareer(guild.id, m.uuid, Career.MANAGER, player)
-                        } else if (number == 0) {
+                        } else if (num == KICK_NUM) {
                             BroadcastMessageService.broadcast(guild.id, player,
-                                    "§6=======§c[公会公告]§6=======",
-                                    "§a玩家${p.name}已被${player.name}踢出了公会"
+                                    "§6========§c[公会公告]§6========",
+                                    "§a§l公会的 ${p.name} §b§l已被 ${player.name} §c§l踢出了公会"
                             )
                             KickMemberService.kick(guild.id, m.uuid, player)
                         } else {
@@ -280,7 +287,7 @@ object GuildView {
             }
             icon(45) {
                 val prev = ItemBuilder.createItem(Material.ARROW) {
-                    name("§6上一页")
+                    name("§6§l上一页")
                 }
                 initDisplay {
                     if (page > 0) {
@@ -297,7 +304,7 @@ object GuildView {
             }
             icon(53) {
                 val next = ItemBuilder.createItem(Material.ARROW) {
-                    name("§6下一页")
+                    name("§6§l下一页")
                 }
                 initDisplay {
                     if (page < 2) {
@@ -320,8 +327,8 @@ object GuildView {
                         } else {
                             1
                         }) {
-                            name("§6等待受理的申请: #(${applySize})")
-                            lore("§b点击打开")
+                            name("§a§l共有 (${applySize}) 条入会申请待处理")
+                            lore("§b§l点击打开申请表操作")
                         }
                     }
                     null
@@ -339,7 +346,7 @@ object GuildView {
         }
     }
 
-    class GuildApplyContext(p: Player) : KViewContext("§b申请列表") {
+    class GuildApplyContext(p: Player) : KViewContext("§6§l公会申请列表") {
         @Volatile
         var init: Boolean = false
         val apply = mutableListOf<Pair<UUID, Long>>()
@@ -371,7 +378,7 @@ object GuildView {
                 }
                 self = ginfo
                 guild = GuildManager.getGuild(ginfo.gid)
-                        ?: throw IllegalStateException("找不到公会数据 数据库约束失败")
+                        ?: throw IllegalStateException("§6§l找不到公会数据,数据库读取失败")
                 apply.addAll(GuildManager.getApplys(guild.id))
                 init = true
                 Bukkit.getScheduler().runTaskLater(BukkitMain.Plugin, {
@@ -400,12 +407,12 @@ object GuildView {
                         val (uuid, time) = apply.getOrNull(i + page * 45) ?: return@display2 null
                         val p = Bukkit.getOfflinePlayer(uuid)
                         ItemBuilder.createItem(Material.SKULL_ITEM, durability = 3) {
-                            name("§a玩家: ${p?.name ?: "找不到名字"}")
+                            name("§a§l玩家: ${p?.name ?: "§6§l找不到名字"}")
                             lore {
                                 +"§a申请日期: ${dateFormat.format(Date(time))}"
                                 +"  "
-                                +"§b左键点击同意请求"
-                                +"§c右键点击拒绝请求"
+                                +"§b§l鼠标左键同意请求"
+                                +"§c§l鼠标右键拒绝请求"
                             }
                             onBuild {
                                 val im = itemMeta as SkullMeta
@@ -435,7 +442,7 @@ object GuildView {
             }
             icon(45) {
                 val prev = ItemBuilder.createItem(Material.ARROW) {
-                    name("§6上一页")
+                    name("§6§l上一页")
                 }
                 initDisplay {
                     if (page > 0) {
@@ -450,9 +457,15 @@ object GuildView {
                     }
                 }
             }
+            icon(49) {
+                initDisplay(ItemBuilder.createItem(Material.DIAMOND) { name("§r[§b§l点击返回公会界面§r]") })
+                click {
+                    KViewHandler.openUI(player, view)
+                }
+            }
             icon(53) {
                 val next = ItemBuilder.createItem(Material.ARROW) {
-                    name("§6下一页")
+                    name("§6§l下一页")
                 }
                 initDisplay {
                     if (page < 2) {

@@ -8,6 +8,7 @@ object StringManager {
 
     fun toJson(map: Map<String, Any>): String = gson.toJson(map)
 
+    @Suppress("UNCHECKED_CAST")
     fun fromJson(json: String): Map<String, Any> = gson.fromJson(json, Map::class.java) as Map<String, Any>
 
 

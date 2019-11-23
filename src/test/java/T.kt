@@ -45,27 +45,4 @@ class T {
         Assert.assertTrue(cs.isAssignableFrom(s))
     }
 
-    @Test
-    fun test() {
-        val a = A()
-        val arr = DataTransform.toDataByteArray(a, "test")
-        val out = DataTransform.loadData(arr)
-        val t = out.load<A>()
-        out.close()
-        println(t.i)
-        println(t.b)
-        println(t.test)
-        println(t.s)
-    }
-
-    class A : Serializable {
-        @Transform
-        var i: Int = 10
-        @Transform
-        var b: String? = null
-        @Transform
-        var test: Int? = null
-        @Transform
-        var s = "helloworld"
-    }
 }
