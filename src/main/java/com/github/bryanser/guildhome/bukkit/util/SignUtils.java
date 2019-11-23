@@ -109,7 +109,6 @@ public class SignUtils {
         try {
             pc.getBlockPositionModifier().write(0, new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
         } catch (Throwable e) {
-            e.printStackTrace();
             pc.getIntegers().write(0, loc.getBlockX());
             pc.getIntegers().write(1, loc.getBlockY());
             pc.getIntegers().write(2, loc.getBlockZ());

@@ -97,7 +97,7 @@ object GuildView {
                     init = true
                     unfind = true
                     Bukkit.getScheduler().runTask(BukkitMain.Plugin) {
-                        KViewHandler.updateUI(p)
+                        KViewHandler.openUI(player, GuildOverview.view)
                     }
                     return@runTaskAsynchronously
                 }
@@ -150,7 +150,7 @@ object GuildView {
                             for (motd in guild.motd.split("\n")) {
                                 +motd
                             }
-                            if (self.career >= Career.MANAGER) {
+                            if (self.career >= Career.VP) {
                                 +" "
                                 +"§3§l=========公会基本管理========="
                                 +"§f按shift+右键 §3§l设置手持物品为公会图标"
@@ -163,7 +163,7 @@ object GuildView {
                     if (ignoreClick) {
                         return@click
                     }
-                    if (self.career < Career.MANAGER) {
+                    if (self.career < Career.VP) {
                         return@click
                     }
                     val tmp = guild.motd.split("\n")
@@ -183,7 +183,7 @@ object GuildView {
                     if (ignoreClick) {
                         return@click
                     }
-                    if (self.career < Career.MANAGER) {
+                    if (self.career < Career.VP) {
                         return@click
                     }
                     val item = player.itemInHand
@@ -205,7 +205,7 @@ object GuildView {
                             name("${m.career.display}: ${p.name}")
                             lore {
                                 +"§6§l该玩家贡献值: §a§l${m.contribution}"
-                                if (self.career >= Career.MANAGER) {
+                                if (self.career > m.career) {
                                     +" "
                                     +"§3§l=========公会基本管理========="
                                     if (m.career < self.career) {
@@ -339,6 +339,19 @@ object GuildView {
                     }
                     if (self.career > Career.MEMBER) {
                         KViewHandler.openUI(player, applyView)
+                    }
+                }
+            }
+            icon(49) {
+                val display = ItemBuilder.createItem(Material.SIGN) {
+                    name("§6点击打开所有公会列表")
+                }
+                display {
+                    display
+                }
+                click {
+                    if (!ignoreClick) {
+                        KViewHandler.openUI(player, GuildOverview.view)
                     }
                 }
             }

@@ -65,7 +65,7 @@ class BukkitMain : JavaPlugin() {
             return false
         }
         if (args.isEmpty()) {
-            KViewHandler.openUI(sender, GuildView.view)
+            KViewHandler.openUI(sender, GuildOverview.view)
             return true
         }
         if (args[0].equals("create", true)) {

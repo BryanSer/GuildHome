@@ -6,6 +6,28 @@ import com.github.bryanser.guildhome.database.DatabaseHandler
 import java.util.*
 
 object GuildManager {
+    fun getAllGuild(): List<GuildInfo> {
+        val guilds = mutableListOf<GuildInfo>()
+        DatabaseHandler.sql {
+            val ps = this.prepareStatement("SELECT * FROM V_Guild")
+            val rs = ps.executeQuery()
+            while(rs.next()){
+                guilds += GuildInfo(
+                        rs.getInt(1),
+                        rs.getString(2),
+                        rs.getString(3),
+                        rs.getInt(4),
+                        rs.getInt(5),
+                        rs.getInt(6),
+                        rs.getString(7),
+                        rs.getString(8),
+                        rs.getInt(9)
+                )
+            }
+        }
+        return guilds
+    }
+
     fun getGuild(id: Int): Guild? {
         var g: Guild? = null
         DatabaseHandler.sql {
@@ -72,13 +94,13 @@ object GuildManager {
         return list
     }
 
-    fun addApply(gid: Int, from: UUID):String {
-        DatabaseHandler.sql{
+    fun addApply(gid: Int, from: UUID): String {
+        DatabaseHandler.sql {
             val ps = this.prepareStatement("SELECT * FROM ${DatabaseHandler.TABLE_GUILD_APPLY} WHERE GID = ? AND NAME = ?")
-            ps.setInt(1,gid)
-            ps.setString(2,from.toString())
+            ps.setInt(1, gid)
+            ps.setString(2, from.toString())
             val rs = ps.executeQuery()
-            if(rs.next()){
+            if (rs.next()) {
                 return "§c申请失败, 你已经申请过了"
             }
         }
@@ -153,7 +175,7 @@ object GuildManager {
             }
             return "§c请求处理失败: 对方已经加入了别的公会"
         }
-         this.getGuild(gid) ?: return "§c请求处理失败: 找不到公会"
+        this.getGuild(gid) ?: return "§c请求处理失败: 找不到公会"
         DatabaseHandler.sql(false) {
             val ps = this.prepareStatement("DELETE FROM ${DatabaseHandler.TABLE_GUILD_APPLY} WHERE NAME = ? AND GID = ?")
             ps.setString(1, uuid.toString())

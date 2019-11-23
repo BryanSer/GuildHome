@@ -88,6 +88,20 @@ object DatabaseHandler {
                     FOREIGN KEY (GID) REFERENCES GuildHome(ID)
                ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4
             """)
+            try {
+                sta.execute("""
+                CREATE VIEW V_GuildSize(GID, SIZE) AS(
+                    SELECT GuildMember.GID,COUNT(*) FROM GuildMember GROUP BY GID
+                )
+                """)
+                sta.execute("""
+                CREATE VIEW V_Guild(GID, GUILD_NAME, MEMBER_NAME, LEVEL, GUILD_CONTRIBUTION, SIZE, ICON, MOTD, SCORE) AS(
+                    SELECT GuildHome.ID, GuildHome.NAME, GuildMember.NAME, GuildHome.LEVEL, GuildHome.CONTRIBUTION, V_GuildSize.SIZE, GuildHome.ICON, GuildHome.MOTD, (GuildHome.LEVEL * 100 + GuildHome.CONTRIBUTION * 10 + V_GuildSize.SIZE * 500) AS SCORE
+                    FROM GuildMember, GuildHome, V_GuildSize WHERE GuildHome.ID = GuildMember.GID AND V_GuildSize.GID = GuildMember.GID AND GuildMember.CAREER = 'PRESIDENT' ORDER BY SCORE DESC
+                )
+                """)
+            } catch (e: Throwable) {
+            }
             sta.close()
         }
     }
