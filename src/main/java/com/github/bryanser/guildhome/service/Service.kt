@@ -46,6 +46,7 @@ abstract class Service(
             services[SetGuildMotdService.name] = SetGuildMotdService
             services[SetMemberCareerService.name] = SetMemberCareerService
             services[ApplyService.name] = ApplyService
+            services[ExitGuildService.name] = ExitGuildService
         }
 
         fun async(func: () -> Unit) {
@@ -68,7 +69,7 @@ abstract class Service(
             if (bukkit) {
                 Bukkit.getPlayer(this)?.sendMessage(msg)
             } else {
-                BungeeMain.Plugin.proxy.getPlayer(this)?.sendMessage(*TextComponent.fromLegacyText(msg))
+                BungeeMain.Plugin.proxy.getPlayer(this)?.sendSyncMsg(msg)
             }
         }
 
@@ -76,7 +77,7 @@ abstract class Service(
             if (bukkit) {
                 Bukkit.getPlayer(this)?.sendMessage(msg)
             } else {
-                BungeeMain.Plugin.proxy.getPlayer(this)?.sendMessage(*TextComponent.fromLegacyText(msg))
+                BungeeMain.Plugin.proxy.getPlayer(this)?.sendSyncMsg(msg)
             }
         }
 

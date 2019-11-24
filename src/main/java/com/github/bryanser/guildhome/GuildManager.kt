@@ -94,6 +94,19 @@ object GuildManager {
         return list
     }
 
+    fun getMemberSize(gid:Int):Int{
+        var size = 0
+        DatabaseHandler.sql {
+            val ps = this.prepareStatement("SELECT COUNT(*) FROM ${DatabaseHandler.TABLE_GUILD_MEMBER} WHERE GID = ?")
+            ps.setInt(1, gid)
+            val rs = ps.executeQuery()
+            if(rs.next()){
+                size = rs.getInt(1)
+            }
+        }
+        return size
+    }
+
     fun addApply(gid: Int, from: UUID): String {
         DatabaseHandler.sql {
             val ps = this.prepareStatement("SELECT * FROM ${DatabaseHandler.TABLE_GUILD_APPLY} WHERE GID = ? AND NAME = ?")
@@ -152,7 +165,7 @@ object GuildManager {
             return "§c请求处理失败: 对方已经加入了别的公会"
         }
         val guild = this.getGuild(gid) ?: return "§c请求处理失败: 找不到公会"
-        val size = this.getMembers(gid).size
+        val size = this.getMemberSize(gid)
         if (size >= Guild.getMaxMemberSize(guild.level)) {
             return "§c请求处理失败: 公会人数已满"
         }

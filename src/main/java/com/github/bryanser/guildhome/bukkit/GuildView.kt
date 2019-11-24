@@ -55,6 +55,8 @@ object GuildView {
         val vpSize: Int
             get() = (members[Career.VP]?.size ?: 0) + 1
 
+        var exit = false
+
         val managerSize: Int
             get() = (members[Career.MANAGER]?.size ?: 0) + vpSize
 
@@ -316,6 +318,39 @@ object GuildView {
                 click {
                     if (page < 2) {
                         page++
+                    }
+                }
+            }
+            icon(52) {
+                val dis = ItemBuilder.createItem(Material.OBSIDIAN) {
+                    name("§c退出公会")
+                }
+                val dis2 = ItemBuilder.createItem(Material.OBSIDIAN, amount = 64) {
+                    name("§c确认退出公会")
+                    lore {
+                        +"§6按下数字8键确认退出公会"
+                    }
+                }
+                display {
+                    if (self.career == Career.PRESIDENT) {
+                        return@display null
+                    }
+                    if (exit) {
+                        dis2
+                    } else {
+                        dis
+                    }
+                }
+                click {
+                    exit = !exit
+                }
+                number { i ->
+                    if (self.career == Career.PRESIDENT) {
+                        return@number
+                    }
+                    if (i == 7) {
+                        player.sendMessage("§6成功退出公会")
+                        Bukkit.getScheduler().runTask(BukkitMain.Plugin, player::closeInventory)
                     }
                 }
             }
