@@ -5,7 +5,11 @@ import java.util.*
 
 data class Member(
         val uuid: UUID,
-        val gid:Int,
+        val gid: Int,
         val career: Career,
         val contribution: Int
-)
+) : IMember
+
+interface IMember
+
+class NullMember : IMember

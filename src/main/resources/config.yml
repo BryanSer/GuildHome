@@ -9,3 +9,5 @@ Mysql:
         - 'characterEncoding=utf-8'
         - 'autoReconnect=true'
         - 'rewriteBatchedStatements=true'
+Cost:
+    Create: 1000.0

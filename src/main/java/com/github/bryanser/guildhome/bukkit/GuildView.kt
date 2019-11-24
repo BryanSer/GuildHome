@@ -4,6 +4,7 @@ package com.github.bryanser.guildhome.bukkit
 
 import com.comphenix.protocol.utility.StreamSerializer
 import com.github.bryanser.brapi.ItemBuilder
+import com.github.bryanser.brapi.Utils
 import com.github.bryanser.brapi.kview.KView
 import com.github.bryanser.brapi.kview.KViewContext
 import com.github.bryanser.brapi.kview.KViewHandler
@@ -56,6 +57,8 @@ object GuildView {
             get() = (members[Career.VP]?.size ?: 0) + 1
 
         var exit = false
+
+        var donate = 0
 
         val managerSize: Int
             get() = (members[Career.MANAGER]?.size ?: 0) + vpSize
@@ -319,6 +322,51 @@ object GuildView {
                     if (page < 2) {
                         page++
                     }
+                }
+            }
+            icon(48) {
+                display {
+                    ItemBuilder.createItem(Material.GOLD_BLOCK) {
+                        name("§e§l向公会捐献节操")
+                        lore {
+                            +"§6按下数字键1-9输入节操数量"
+                            +"§6如果要输入0请右键本物品"
+                            +"§b§l按下shift+左键确认捐赠"
+                            +"§a§l按下shift+右键清空数量"
+                            +"  "
+                            +"§e你当前输入的数量: $donate"
+                            +"  "
+                            +"§e§l你的总贡献量: ${self.contribution}"
+                        }
+                    }
+                }
+                click(ClickType.SHIFT_LEFT) {
+                    val has = Utils.economy!!.getBalance(player)
+                    if (has < donate) {
+                        player.sendMessage("§c你没有足够多的的节操来捐赠")
+                        return@click
+                    }
+                    Utils.economy!!.withdrawPlayer(player, donate.toDouble())
+                    Bukkit.getScheduler().runTaskLater(BukkitMain.Plugin, { player.closeInventory() }, 1)
+                    DonateService.donate(donate,player)
+                    player.sendMessage("§6捐赠成功")
+                    donate = 0
+                }
+                number { i ->
+                    donate *= 10
+                    donate += i + 1
+                    if (donate < 0) {
+                        donate = 0
+                    }
+                }
+                click(ClickType.RIGHT) {
+                    donate *= 10
+                    if (donate < 0) {
+                        donate = 0
+                    }
+                }
+                click(ClickType.SHIFT_RIGHT) {
+                    donate = 0
                 }
             }
             icon(52) {

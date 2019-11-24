@@ -26,8 +26,13 @@ abstract class Service(
         data["Service"] = name
         val json = StringManager.toJson(data)
         if (DEBUG) {
-            Bukkit.getLogger().info("DEBUG-发送json: $json")
-            Bukkit.getLogger().info("DEBUG-发送服务名: $name")
+            if (bukkit) {
+                Bukkit.getLogger().info("DEBUG-发送json: $json")
+                Bukkit.getLogger().info("DEBUG-发送服务名: $name")
+            }else{
+                BungeeMain.Plugin.proxy.logger.info("DEBUG-发送json: $json")
+                BungeeMain.Plugin.proxy.logger.info("DEBUG-发送服务名: $name")
+            }
         }
         Channel.sendProxy(json, p)
     }
@@ -47,6 +52,9 @@ abstract class Service(
             services[SetMemberCareerService.name] = SetMemberCareerService
             services[ApplyService.name] = ApplyService
             services[ExitGuildService.name] = ExitGuildService
+            services[CreateSuccessService.name] = CreateSuccessService
+            services[DisbandGuildService.name] = DisbandGuildService
+            services[DonateService.name] = DonateService
         }
 
         fun async(func: () -> Unit) {

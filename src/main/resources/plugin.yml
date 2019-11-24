@@ -2,6 +2,8 @@ name: GuildHome
 version: ${project.version}
 main: com.github.bryanser.guildhome.bukkit.BukkitMain
 depend: [BrAPI,ProtocolLib]
+softdepend:
+    - PlaceholderAPI
 commands:
     GuildHome:
         aliases: [gh]
@@ -9,4 +11,5 @@ commands:
             §6/<command> >> 打开UI
             §6/<command>> create [公会名] >> 创建公会(测试版不需要支付费用)
             §6/<command> apply [公会] >> 申请加入公会
-            §6/<command> invite [玩家] >> 邀请一个玩家加入你的公会
+            §6/<command> inv [玩家] >> 邀请一个玩家加入你的公会
+            §6/<command> disband >> 解散你的公会

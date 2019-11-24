@@ -25,7 +25,7 @@ class BungeeMain : Plugin() {
         this.proxy.registerChannel(Channel.BUKKIT2BUNGEE)
         this.proxy.registerChannel(Channel.BUNGEE2BUKKIT)
         Channel.sendProxy = { s, p ->
-            (p as ProxiedPlayer).sendData(Channel.BUNGEE2BUKKIT, s.toByteArray())
+            (p as ProxiedPlayer).server.sendData(Channel.BUNGEE2BUKKIT, s.toByteArray())
         }
         this.proxy.pluginManager.registerListener(this, BungeeListener())
     }

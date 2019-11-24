@@ -3,6 +3,7 @@ package com.github.bryanser.guildhome
 import com.github.bryanser.guildhome.bungee.GuildSetManager
 import com.github.bryanser.guildhome.database.Career
 import com.github.bryanser.guildhome.database.DatabaseHandler
+import com.github.bryanser.guildhome.service.impl.BroadcastMessageService
 import java.util.*
 
 object GuildManager {
@@ -11,7 +12,7 @@ object GuildManager {
         DatabaseHandler.sql {
             val ps = this.prepareStatement("SELECT * FROM V_Guild")
             val rs = ps.executeQuery()
-            while(rs.next()){
+            while (rs.next()) {
                 guilds += GuildInfo(
                         rs.getInt(1),
                         rs.getString(2),
@@ -81,7 +82,7 @@ object GuildManager {
     fun getMembers(gid: Int): List<Member> {
         val list = mutableListOf<Member>()
         DatabaseHandler.sql {
-            val ps = this.prepareStatement("SELECT * FROM ${DatabaseHandler.TABLE_GUILD_MEMBER} WHERE GID = ?")
+            val ps = this.prepareStatement("SELECT * FROM ${DatabaseHandler.TABLE_GUILD_MEMBER} WHERE GID = ? ORDER BY CONTRIBUTION DESC")
             ps.setInt(1, gid)
             val rs = ps.executeQuery()
             while (rs.next()) {
@@ -94,13 +95,13 @@ object GuildManager {
         return list
     }
 
-    fun getMemberSize(gid:Int):Int{
+    fun getMemberSize(gid: Int): Int {
         var size = 0
         DatabaseHandler.sql {
             val ps = this.prepareStatement("SELECT COUNT(*) FROM ${DatabaseHandler.TABLE_GUILD_MEMBER} WHERE GID = ?")
             ps.setInt(1, gid)
             val rs = ps.executeQuery()
-            if(rs.next()){
+            if (rs.next()) {
                 size = rs.getInt(1)
             }
         }
@@ -154,7 +155,7 @@ object GuildManager {
         return list
     }
 
-    fun apply(gid: Int, uuid: UUID): String {
+    fun apply(gid: Int, uuid: UUID, name: String): String {
         val m = this.getMember(uuid)
         if (m != null) {
             DatabaseHandler.sql(false) {
@@ -175,6 +176,10 @@ object GuildManager {
             ps.executeUpdate()
             GuildSetManager.setMember(uuid, gid, Career.MEMBER)
         }
+        BroadcastMessageService.broadcast(gid,
+                "§6========§c[公会公告]§6========",
+                "§c§l成员${name}加入了公会"
+        )
         return "§6请求同意成功"
     }
 

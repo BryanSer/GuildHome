@@ -29,12 +29,15 @@ object ApplyMemberService : Service(
                 return@async
             }
             if (accept) {
-                val s = GuildManager.apply(gid, target)
+                val s = GuildManager.apply(gid, target, BungeeMain.Plugin.proxy.getPlayer(target)?.name
+                        ?: "")
+
+
                 p.sendSyncMsg(s)
                 if (msg) {
                     if (s != "§c请求处理失败: 对方已经加入了别的公会") {
                         target.sendMsg(s)
-                    }else{
+                    } else {
                         target.sendMsg("§c请求处理失败: 你已经有公会了")
                     }
                 }
