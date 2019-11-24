@@ -29,7 +29,7 @@ object ExitGuildService : Service(
 
     fun exit(from: Player) {
         val data = mutableMapOf<String, Any>()
-        data["Name"] = from.name
+        data["Player"] = from.name
         sendData(data, from)
     }
 }

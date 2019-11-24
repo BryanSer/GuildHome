@@ -350,6 +350,7 @@ object GuildView {
                     }
                     if (i == 7) {
                         player.sendMessage("§6成功退出公会")
+                        ExitGuildService.exit(player)
                         Bukkit.getScheduler().runTask(BukkitMain.Plugin, player::closeInventory)
                     }
                 }

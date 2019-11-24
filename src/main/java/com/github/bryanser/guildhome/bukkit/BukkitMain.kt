@@ -35,6 +35,7 @@ class BukkitMain : JavaPlugin() {
         Channel.sendProxy = { it, p ->
             (p as Player).sendPluginMessage(this, Channel.BUKKIT2BUNGEE, it.toByteArray())
         }
+
     }
 
     fun connectSQL() {
