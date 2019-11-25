@@ -3,12 +3,14 @@
 package com.github.bryanser.guildhome.bungee
 
 import com.github.bryanser.guildhome.Channel
+import com.github.bryanser.guildhome.Guild
 import com.github.bryanser.guildhome.database.DatabaseHandler
 import com.github.bryanser.guildhome.service.BungeeListener
 import com.zaxxer.hikari.HikariConfig
 import net.md_5.bungee.api.connection.ProxiedPlayer
 import net.md_5.bungee.api.plugin.Plugin
 import net.md_5.bungee.api.scheduler.GroupedThreadFactory
+import net.md_5.bungee.config.Configuration
 import net.md_5.bungee.config.ConfigurationProvider
 import net.md_5.bungee.config.YamlConfiguration
 import java.io.*
@@ -30,6 +32,14 @@ class BungeeMain : Plugin() {
         this.proxy.pluginManager.registerListener(this, BungeeListener())
     }
 
+    fun setLevelMaxMember(config: Configuration) {
+        val lvs = config.getSection("Level")
+        for (key in lvs.keys) {
+            val data = lvs.getInt("$key.MaxMember")
+            Guild.maxMember[key.toInt()] = data
+        }
+    }
+
     fun connectSQL() {
         val f = File(this.dataFolder, "config.yml")
         if (!f.exists()) {
@@ -37,7 +47,7 @@ class BungeeMain : Plugin() {
         }
         val cfgpro = ConfigurationProvider.getProvider(YamlConfiguration::class.java)
         val cfg = cfgpro.load(f)
-
+        setLevelMaxMember(cfg)
         val db = cfg.getSection("Mysql")
         val sb = StringBuilder(String.format("jdbc:mysql://%s:%d/%s?user=%s&password=%s",
                 db.getString("host"),
@@ -52,9 +62,9 @@ class BungeeMain : Plugin() {
         }
         val config = HikariConfig()
         config.jdbcUrl = sb.toString()
-        try{
-            config.threadFactory = GroupedThreadFactory(this,"Hikari Thread Factory")
-        }catch(t:Throwable){
+        try {
+            config.threadFactory = GroupedThreadFactory(this, "Hikari Thread Factory")
+        } catch (t: Throwable) {
             val con = GroupedThreadFactory::class.java.getConstructor(net.md_5.bungee.api.plugin.Plugin::class.java)
             val gtf = con.newInstance(this)
             config.threadFactory = gtf

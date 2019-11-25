@@ -1,3 +1,5 @@
 main: com.github.bryanser.guildhome.bungee.BungeeMain
 name: GuildHome
 version: ${project.version}
+depend:
+    - BrChat

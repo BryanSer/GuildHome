@@ -10,6 +10,7 @@ import com.github.bryanser.brapi.kview.KViewContext
 import com.github.bryanser.brapi.kview.KViewHandler
 import com.github.bryanser.brapi.kview.builder.KItem
 import com.github.bryanser.brapi.kview.builder.KViewBuilder
+import com.github.bryanser.brapi.kview.builder.KViewMaker
 import com.github.bryanser.guildhome.Guild
 import com.github.bryanser.guildhome.GuildManager
 import com.github.bryanser.guildhome.Member
@@ -48,6 +49,7 @@ object GuildView {
         var init: Boolean = false
         @Volatile
         var unfind: Boolean = false
+        @Volatile
         var ignoreClick: Boolean = true
         lateinit var guild: Guild
         val members = mutableMapOf<Career, MutableList<Member>>()
@@ -128,7 +130,8 @@ object GuildView {
         }
     }
 
-    private inline fun KItem<GuildViewContext>.display(crossinline func: GuildViewContext.() -> ItemStack?) {
+    @KViewMaker
+    internal inline fun KItem<GuildViewContext>.display(crossinline func: GuildViewContext.() -> ItemStack?) {
         initDisplay {
             if (!init) {
                 return@initDisplay unready
@@ -181,6 +184,7 @@ object GuildView {
                             SetGuildMotdService.setMotd(guild.id, Array(4) {
                                 ChatColor.translateAlternateColorCodes('&', s.getOrElse(it) { "" })
                             }, p)
+                            KViewHandler.openUI(player, view)
                         }
                     }
                 }
@@ -198,6 +202,7 @@ object GuildView {
                     }
                     val icon = saveIcon(item)
                     SetGuildIconService.setGuildIcon(guild.id, icon, player)
+                    laterReload(player, 20)
                 }
             }
             for (i in 0 until 36) {
@@ -307,20 +312,87 @@ object GuildView {
                     }
                 }
             }
-            icon(53) {
-                val next = ItemBuilder.createItem(Material.ARROW) {
-                    name("§6§l下一页")
-                }
-                initDisplay {
-                    if (page < 2) {
-                        next
-                    } else {
-                        null
+            icon(46) {
+                display {
+                    ItemBuilder.createItem(Material.EXP_BOTTLE, amount = guild.level) {
+                        name("§a§l公会升级")
+                        lore {
+                            +"§b§l公会当前等级: ${guild.level}"
+                            +"§a最大可容纳人数: ${Guild.getMaxMemberSize(guild.level)}"
+                            if (guild.level >= Guild.maxLevel) {
+                                +"§b已达到最大等级"
+                            } else {
+                                val cost = GuildConfig.costItem[guild.level + 1]
+                                if (cost == null) {
+                                    +"§c§l无法升级"
+                                } else {
+                                    +"§6升级需要贡献量: ${cost.cost}"
+                                    for (info in cost.info) {
+                                        +info
+                                    }
+                                    if (self.career == Career.PRESIDENT) {
+                                        +"§c左键点击升级公会"
+                                    } else {
+                                        +"§c只有会长可以升级公会"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 click {
-                    if (page < 2) {
-                        page++
+                    if (ignoreClick) {
+                        return@click
+                    }
+                    if (self.career != Career.PRESIDENT) {
+                        return@click
+                    }
+                    val cost = GuildConfig.costItem[guild.level + 1]
+                    if (guild.level >= Guild.maxLevel) {
+                        player.sendMessage("§c公会已经无法升级了")
+                        return@click
+                    }
+                    if (cost == null) {
+                        player.sendMessage("§c公会已经无法升级了")
+                        return@click
+                    }
+                    if (guild.contribution < cost.cost) {
+                        player.sendMessage("§c公会贡献值不足 无法升级")
+                        return@click
+                    }
+                    if (!Br.API.Utils.hasEnoughItems(player, cost.items)) {
+                        player.sendMessage("§c你身上没有足够升级公会的物品")
+                        return@click
+                    }
+                    Br.API.Utils.removeItem(player, cost.items)
+                    LevelUpService.levelUp(guild.id, cost.cost, player)
+                    BroadcastMessageService.broadcast(guild.id, player,
+                            "§6公会公告",
+                            "§b公会等级提升"
+                    )
+                    this.laterReload(player, 20)
+                }
+            }
+            icon(47) {
+                display {
+                    if (self.career > Career.MEMBER) {
+                        return@display ItemBuilder.createItem(Material.PAPER, if (applySize > 0) {
+                            applySize
+                        } else {
+                            1
+                        }) {
+                            name("§a§l共有 (${applySize}) 条入会申请待处理")
+                            lore("§b§l点击打开申请表操作")
+                        }
+                    }
+                    null
+                }
+                click {
+                    if (ignoreClick) {
+                        return@click
+                    }
+                    if (self.career > Career.MEMBER) {
+                        KViewHandler.openUI(player, applyView)
                     }
                 }
             }
@@ -342,16 +414,20 @@ object GuildView {
                     }
                 }
                 click(ClickType.SHIFT_LEFT) {
+                    if (donate == 0) {
+                        KViewHandler.updateUI(player)
+                        return@click
+                    }
                     val has = Utils.economy!!.getBalance(player)
                     if (has < donate) {
                         player.sendMessage("§c§l你没有足够多的的节操来贡献给公会哦")
                         return@click
                     }
                     Utils.economy!!.withdrawPlayer(player, donate.toDouble())
-                    Bukkit.getScheduler().runTaskLater(BukkitMain.Plugin, { player.closeInventory() }, 1)
-                    DonateService.donate(donate,player)
+                    DonateService.donate(donate, player)
                     player.sendMessage("§6§l捐赠成功,感谢你对公会的支持")
                     donate = 0
+                    laterReload(player, 20)
                 }
                 number { i ->
                     donate *= 10
@@ -368,6 +444,20 @@ object GuildView {
                 }
                 click(ClickType.SHIFT_RIGHT) {
                     donate = 0
+                    KViewHandler.updateUI(player)
+                }
+            }
+            icon(49) {
+                val display = ItemBuilder.createItem(Material.SIGN) {
+                    name("§6§l打开公会列表")
+                }
+                display {
+                    display
+                }
+                click {
+                    if (!ignoreClick) {
+                        KViewHandler.openUI(player, GuildOverview.view)
+                    }
                 }
             }
             icon(52) {
@@ -404,39 +494,20 @@ object GuildView {
                     }
                 }
             }
-            icon(47) {
-                display {
-                    if (self.career > Career.MEMBER) {
-                        return@display ItemBuilder.createItem(Material.PAPER, if (applySize > 0) {
-                            applySize
-                        } else {
-                            1
-                        }) {
-                            name("§a§l共有 (${applySize}) 条入会申请待处理")
-                            lore("§b§l点击打开申请表操作")
-                        }
+            icon(53) {
+                val next = ItemBuilder.createItem(Material.ARROW) {
+                    name("§6§l下一页")
+                }
+                initDisplay {
+                    if (page < 2) {
+                        next
+                    } else {
+                        null
                     }
-                    null
                 }
                 click {
-                    if (ignoreClick) {
-                        return@click
-                    }
-                    if (self.career > Career.MEMBER) {
-                        KViewHandler.openUI(player, applyView)
-                    }
-                }
-            }
-            icon(49) {
-                val display = ItemBuilder.createItem(Material.SIGN) {
-                    name("§6§l打开公会列表")
-                }
-                display {
-                    display
-                }
-                click {
-                    if (!ignoreClick) {
-                        KViewHandler.openUI(player, GuildOverview.view)
+                    if (page < 2) {
+                        page++
                     }
                 }
             }
@@ -487,7 +558,8 @@ object GuildView {
         }
     }
 
-    private inline fun KItem<GuildApplyContext>.display2(crossinline func: GuildApplyContext.() -> ItemStack?) {
+    @KViewMaker
+    internal inline fun KItem<GuildApplyContext>.display2(crossinline func: GuildApplyContext.() -> ItemStack?) {
         initDisplay {
             if (!init) {
                 return@initDisplay unready

@@ -2,6 +2,7 @@ package com.github.bryanser.guildhome.service.impl
 
 import com.github.bryanser.brapi.Utils
 import com.github.bryanser.guildhome.bukkit.BukkitMain
+import com.github.bryanser.guildhome.bukkit.GuildConfig
 import com.github.bryanser.guildhome.service.Service
 import net.md_5.bungee.api.connection.ProxiedPlayer
 import org.bukkit.Bukkit
@@ -18,7 +19,7 @@ object CreateSuccessService : Service(
             val p = Bukkit.getOfflinePlayer(uuid) ?: return
             if (p.isOnline) {
                 p.player.sendMessage("§c由于公会创建失败 创建费用返还给你")
-                Utils.economy!!.depositPlayer(p, BukkitMain.Plugin.create_cost)
+                Utils.economy!!.depositPlayer(p, GuildConfig.create_cost)
             }
         }
     }

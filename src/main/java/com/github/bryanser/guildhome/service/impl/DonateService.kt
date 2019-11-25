@@ -14,25 +14,33 @@ object DonateService : Service(
         val value = data["Value"].asInt()
         val from = data["Player"] as String
         val p = BungeeMain.Plugin.proxy.getPlayer(from) ?: return
-        sync {
-            val member = GuildManager.getMember(p.uniqueId) ?: return@sync
+        val self = data["Self"] as Boolean
+        val guild = data["Guild"] as Boolean
+        async {
+            val member = GuildManager.getMember(p.uniqueId) ?: return@async
             DatabaseHandler.sql {
-                val ps = this.prepareStatement("UPDATE ${DatabaseHandler.TABLE_GUILD_MEMBER} SET CONTRIBUTION = CONTRIBUTION + ? WHERE NAME = ?")
-                ps.setInt(1, value)
-                ps.setString(2, p.uniqueId.toString())
-                ps.executeUpdate()
-                val ps2 = this.prepareStatement("UPDATE ${DatabaseHandler.TABLE_GUILDHOME} SET CONTRIBUTION = CONTRIBUTION + ? WHERE ID = ?")
-                ps2.setInt(1, value)
-                ps2.setInt(2, member.gid)
-                ps2.executeUpdate()
+                if (self) {
+                    val ps = this.prepareStatement("UPDATE ${DatabaseHandler.TABLE_GUILD_MEMBER} SET CONTRIBUTION = CONTRIBUTION + ? WHERE NAME = ?")
+                    ps.setInt(1, value)
+                    ps.setString(2, p.uniqueId.toString())
+                    ps.executeUpdate()
+                }
+                if (guild) {
+                    val ps2 = this.prepareStatement("UPDATE ${DatabaseHandler.TABLE_GUILDHOME} SET CONTRIBUTION = CONTRIBUTION + ? WHERE ID = ?")
+                    ps2.setInt(1, value)
+                    ps2.setInt(2, member.gid)
+                    ps2.executeUpdate()
+                }
             }
         }
     }
 
-    fun donate(value: Int, from: Player) {
+    fun donate(value: Int, from: Player, editSelf: Boolean = true, editGuild: Boolean = true) {
         sendData(mutableMapOf(
                 "Player" to from.name,
-                "Value" to value
+                "Value" to value,
+                "Self" to editSelf,
+                "Guild" to editGuild
         ), from)
     }
 }

@@ -30,7 +30,7 @@ object DisbandGuildService : Service(
                         "§c§l您所在的公会已经被会长解散"
                 )
         )
-        sync {
+        async {
             DatabaseHandler.sql {
                 val ps1 = this.prepareStatement("DELETE FROM ${DatabaseHandler.TABLE_GUILD_MEMBER} WHERE GID = ?")
                 ps1.setInt(1, member.gid)

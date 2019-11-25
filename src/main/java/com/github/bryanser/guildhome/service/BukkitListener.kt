@@ -11,14 +11,11 @@ class BukkitListener : PluginMessageListener {
         if (Service.DEBUG)
             Bukkit.getLogger().info("接收信道: $channel")
         val str = String(message)
-        val json = StringManager.fromJson(str)
         if (Service.DEBUG) {
             Bukkit.getLogger().info("接收信道信息: $str")
         }
-        val data = json["data"] as Map<String, Any>
-        val sign = json["sign"] as String
-        val rsign = Service.sign(data.toString())
-        if (rsign != sign) {
+        val data = Service.authJson(str)
+        if (data == null) {
             Bukkit.getLogger().warning("[警告] 有试图传入未经签名的通信信息, from player:${player?.name}")
             return
         }

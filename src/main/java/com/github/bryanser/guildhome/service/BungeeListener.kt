@@ -11,15 +11,12 @@ class BungeeListener : Listener {
     @EventHandler
     fun onMessage(evt: PluginMessageEvent) {
         if (evt.getTag() == Channel.BUKKIT2BUNGEE) {
-            val json = StringManager.fromJson(String(evt.data))
+            val json = String(evt.data)
             if (Service.DEBUG) {
                 BungeeMain.Plugin.logger.info("DEBUG-接收json: $json")
             }
-
-            val data = json["data"] as Map<String, Any>
-            val sign = json["sign"] as String
-            val rsign = Service.sign(data.toString())
-            if(rsign != sign){
+            val data =  Service.authJson(json)
+            if(data == null){
                 BungeeMain.Plugin.logger.warning("[警告] 有试图传入未经签名的通信信息, from:${evt.sender.address}")
                 return
             }

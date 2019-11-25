@@ -10,10 +10,12 @@ import com.google.gson.JsonParser
 import net.md_5.bungee.api.chat.TextComponent
 import net.md_5.bungee.api.connection.ProxiedPlayer
 import org.bukkit.Bukkit
+import java.lang.StringBuilder
 import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.naming.RefAddr
+import kotlin.collections.HashMap
 
 abstract class Service(
         val name: String,
@@ -29,7 +31,7 @@ abstract class Service(
 //        data["SendID"] = UUID.randomUUID().toString()
         data["Service"] = name
         val realData = mutableMapOf<String, Any>()
-        val sign = sign(data.toString())
+        val sign = sign(data.toAuthString())
         realData["data"] = data
         realData["sign"] = sign
         val result = StringManager.toJson(realData)
@@ -37,9 +39,11 @@ abstract class Service(
             if (bukkit) {
                 Bukkit.getLogger().info("DEBUG-发送json: $result")
                 Bukkit.getLogger().info("DEBUG-发送服务名: $name")
+                Bukkit.getLogger().info("DEBUG-原始数据: $data")
             } else {
                 BungeeMain.Plugin.proxy.logger.info("DEBUG-发送json: $result")
                 BungeeMain.Plugin.proxy.logger.info("DEBUG-发送服务名: $name")
+                BungeeMain.Plugin.proxy.logger.info("DEBUG-原始数据: $data")
             }
         }
         Channel.sendProxy(result, p)
@@ -63,16 +67,45 @@ abstract class Service(
             services[CreateSuccessService.name] = CreateSuccessService
             services[DisbandGuildService.name] = DisbandGuildService
             services[DonateService.name] = DonateService
+            services[LevelUpService.name] = LevelUpService
         }
 
         fun sign(json: String): String {
             return json.hashSHA256(SALT)
         }
 
+        fun Map<String, Any>.toAuthString(): String {
+            val map = HashMap(this)
+            val str = StringBuilder()
+            for ((k, v) in map) {
+                str.append(k).append(':')
+                if (v is Map<*, *>) {
+                    val m = v as Map<String, Any>
+                    str.append(m.toAuthString())
+                } else if (v is Array<*>) {
+                    str.append(v.contentDeepToString())
+                } else {
+                    str.append(v.toString())
+                }
+                str.append(";")
+            }
+            return str.toString()
+        }
+
         fun authJson(json: String): Map<String, Any>? {
-
-
-            return null
+            val jdata = StringManager.fromJson(json)
+            val data = jdata["data"] as Map<String, Any>
+            val sign = jdata["sign"] as String
+            val rsign = sign(data.toAuthString())
+            if (DEBUG) {
+                println("DEBUG-签名校验 数据: ${data}")
+                println("DEBUG-签名校验 传入签名: ${sign}")
+                println("DEBUG-签名校验 原始签名: ${rsign}")
+            }
+            if (rsign != sign) {
+                return null
+            }
+            return data
         }
 
         const val SALT = "GN2PDN201B0HC21OIHE"

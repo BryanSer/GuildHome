@@ -32,6 +32,8 @@ class BukkitMain : JavaPlugin() {
         Service.bukkit = true
         connectSQL()
         register()
+        GuildConfig.init()
+        Bukkit.getPluginManager().registerEvents(GuildConfig, this)
     }
 
     fun register() {
@@ -42,32 +44,9 @@ class BukkitMain : JavaPlugin() {
         }
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             object : EZPlaceholderHook(this, "guildhome") {
-                val cache = ConcurrentHashMap<UUID, IMember>()
-                val guilds = ConcurrentHashMap<Int, GuildInfo>()
-                val players = CopyOnWriteArrayList<UUID>()
-
-                init {
-                    Bukkit.getScheduler().runTaskTimer(this@BukkitMain, {
-                        val list = Bukkit.getOnlinePlayers().map(Player::getUniqueId).toList()
-                        players.clear()
-                        players.addAll(list)
-                    }, 300, 300)
-                    Bukkit.getScheduler().runTaskTimerAsynchronously(this@BukkitMain, {
-                        for (name in players) {
-                            val m = GuildManager.getMember(name) ?: NullMember()
-                            cache[name] = m
-                        }
-                    }, 600, 600)
-                    Bukkit.getScheduler().runTaskTimerAsynchronously(this@BukkitMain, {
-                        for (g in GuildManager.getAllGuild()) {
-                            guilds[g.gid] = g
-                        }
-                    }, 700, 700)
-                }
-
                 override fun onPlaceholderRequest(p: Player, params: String): String? {
-                    val member = cache[p.uniqueId] as? Member ?: return "无所属公会"
-                    val guild = guilds[member.gid] ?: return "数据读取中"
+                    val member = GuildConfig.cache[p.uniqueId] as? Member ?: return "无所属公会"
+                    val guild =  GuildConfig.guilds[member.gid] ?: return "数据读取中"
                     return when (params) {
                         "name" -> {
                             guild.name
@@ -104,15 +83,13 @@ class BukkitMain : JavaPlugin() {
         }
     }
 
-    var create_cost: Double = 1000.0
-
     fun connectSQL() {
         val f = File(this.dataFolder, "config.yml")
         if (!f.exists()) {
             this.saveDefaultConfig()
         }
         val cfg = YamlConfiguration.loadConfiguration(f)
-        create_cost = cfg.getDouble("Cost.Create", 1000.0)
+        GuildConfig.loadConfig(cfg)
         val db = cfg.getConfigurationSection("Mysql")
         val sb = StringBuilder(String.format("jdbc:mysql://%s:%d/%s?user=%s&password=%s",
                 db.getString("host"),
@@ -142,28 +119,38 @@ class BukkitMain : JavaPlugin() {
             KViewHandler.openUI(sender, GuildOverview.view)
             return true
         }
-        if(args[0].equals("disband",true)){
+        if (args[0].equals("reload", true) && sender.isOp) {
+            val f = File(this.dataFolder, "config.yml")
+            if (!f.exists()) {
+                this.saveDefaultConfig()
+            }
+            val cfg = YamlConfiguration.loadConfiguration(f)
+            GuildConfig.loadConfig(cfg)
+            sender.sendMessage("§6重载成功")
+            return true
+        }
+        if (args[0].equals("disband", true)) {
             DisbandGuildService.disband(sender)
             return true
         }
-        if (args[0].equals("create", true)) {
+        if (args[0].equals("create", true) && args.size > 1) {
             val has = Utils.economy!!.getBalance(sender)
-            if (has < create_cost) {
-                sender.sendMessage("§c§l你没有足够的节操来创建公会,需要${create_cost}节操才可创建")
+            if (has < GuildConfig.create_cost) {
+                sender.sendMessage("§c§l你没有足够的节操来创建公会,需要${GuildConfig.create_cost}节操才可创建")
                 return true
             }
             sender.sendMessage("§6§l正在预扣除节操来创建公会,在完成创建前请勿离开服务器")
-            Utils.economy!!.withdrawPlayer(sender, create_cost)
+            Utils.economy!!.withdrawPlayer(sender, GuildConfig.create_cost)
             val name = args[1]
             CreateGuildService.createGuild(name, sender)
             return true
         }
-        if (args[0].equals("apply", true)) {
+        if (args[0].equals("apply", true) && args.size > 1) {
             val name = args[1]
             ApplyService.apply(name, sender)
             return true
         }
-        if (args[0].equals("inv", true)) {
+        if (args[0].equals("inv", true) && args.size > 1) {
             val target = Bukkit.getPlayerExact(args[1])
             if (target == null || !target.isOnline) {
                 sender.sendMessage("§c找不到在线玩家 §a${args[1]} §b请确认名称是否正确或在线")

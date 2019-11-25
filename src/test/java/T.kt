@@ -11,33 +11,33 @@ import java.io.Serializable
 @Ignore
 class T {
 
-    val gson = Gson()
-
     @Test
-    fun testJson(){
-        val data = mutableMapOf<String,Any>()
-        val sub = mutableMapOf<String,Any>()
+    fun testJson() {
+        val data = mutableMapOf<String, Any>()
+        val sub = mutableMapOf<String, Any>()
         sub["test"] = "test"
         sub["value"] = 1
+        println("sub: $sub")
         data["sub"] = sub
         data["version"] = "1.0"
-        val json = gson.toJson(data)
+        val json = StringManager.toJson(data)
         println("jons: \n$json")
         val result = StringManager.fromJson(json)
         println("result: $result")
-        val subm = result["sub"] as Map<String,Any>
+        val subm = result["sub"] as Map<String, Any>
         println("sub: $subm")
+        Assert.assertEquals(sub.toString(), subm.toString())
     }
 
     @Test
-    fun testUntil(){
+    fun testUntil() {
         Assert.assertFalse(1 in 1 until 1)
 
     }
 
 
     @Test
-    fun career(){
+    fun career() {
         Assert.assertTrue(Career.VP >= Career.MANAGER)
     }
 //

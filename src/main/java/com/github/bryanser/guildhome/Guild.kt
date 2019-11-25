@@ -15,13 +15,18 @@ data class Guild(
         var icon: String?
 ) {
     companion object {
-        fun getMaxMemberSize(lv: Int): Int {
-            return when (lv) {
-                1 -> 30
-                2 -> 50
-                3 -> 80
-                else -> 80
+        val maxMember = mutableMapOf<Int, Int>()
+        val maxLevel:Int by lazy{
+            var max = 1
+            for(k in maxMember.keys){
+                if(k > max){
+                    max = k
+                }
             }
+            max
+        }
+        fun getMaxMemberSize(lv: Int): Int {
+            return maxMember[lv] ?: 80
         }
     }
 }
@@ -34,7 +39,7 @@ data class GuildInfo(
         val contribution: Int,
         val memberSize: Int,
         val icon: String?,
-        val motd:String,
+        val motd: String,
         val score: Int
 ) {
     var displayIcon: Any? = null
