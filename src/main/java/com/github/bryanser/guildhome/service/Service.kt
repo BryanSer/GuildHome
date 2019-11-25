@@ -5,11 +5,15 @@ import com.github.bryanser.guildhome.StringManager
 import com.github.bryanser.guildhome.bukkit.BukkitMain
 import com.github.bryanser.guildhome.bungee.BungeeMain
 import com.github.bryanser.guildhome.service.impl.*
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import net.md_5.bungee.api.chat.TextComponent
 import net.md_5.bungee.api.connection.ProxiedPlayer
 import org.bukkit.Bukkit
+import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.TimeUnit
+import javax.naming.RefAddr
 
 abstract class Service(
         val name: String,
@@ -22,19 +26,23 @@ abstract class Service(
         if (bukkitSend && !bukkit) {
             throw IllegalStateException("这个数据不应该由Bukkit发送")
         }
-        data["SendID"] = UUID.randomUUID().toString()
+//        data["SendID"] = UUID.randomUUID().toString()
         data["Service"] = name
-        val json = StringManager.toJson(data)
+        val realData = mutableMapOf<String, Any>()
+        val sign = sign(data.toString())
+        realData["data"] = data
+        realData["sign"] = sign
+        val result = StringManager.toJson(realData)
         if (DEBUG) {
             if (bukkit) {
-                Bukkit.getLogger().info("DEBUG-发送json: $json")
+                Bukkit.getLogger().info("DEBUG-发送json: $result")
                 Bukkit.getLogger().info("DEBUG-发送服务名: $name")
-            }else{
-                BungeeMain.Plugin.proxy.logger.info("DEBUG-发送json: $json")
+            } else {
+                BungeeMain.Plugin.proxy.logger.info("DEBUG-发送json: $result")
                 BungeeMain.Plugin.proxy.logger.info("DEBUG-发送服务名: $name")
             }
         }
-        Channel.sendProxy(json, p)
+        Channel.sendProxy(result, p)
     }
 
     companion object {
@@ -55,6 +63,43 @@ abstract class Service(
             services[CreateSuccessService.name] = CreateSuccessService
             services[DisbandGuildService.name] = DisbandGuildService
             services[DonateService.name] = DonateService
+        }
+
+        fun sign(json: String): String {
+            return json.hashSHA256(SALT)
+        }
+
+        fun authJson(json: String): Map<String, Any>? {
+
+
+            return null
+        }
+
+        const val SALT = "GN2PDN201B0HC21OIHE"
+
+        val instance = MessageDigest.getInstance("SHA-256")
+        fun String.hashSHA256(salt: String): String {
+            val ba = instance.digest("$this-guildhome-$salt".toByteArray())
+            return byteArrayToHexString(ba)
+        }
+
+        private val hexDigIts = "0123456789ABCDEF".toCharArray()
+        fun byteArrayToHexString(b: ByteArray): String {
+            val resultSb = StringBuffer()
+            for (i in b.indices) {
+                resultSb.append(byteToHexString(b[i]))
+            }
+            return resultSb.toString()
+        }
+
+        fun byteToHexString(b: Byte): String {
+            var n = b.toInt()
+            if (n < 0) {
+                n += 256
+            }
+            val d1 = n / 16
+            val d2 = n % 16
+            return hexDigIts[d1] + "" + hexDigIts[d2]
         }
 
         fun async(func: () -> Unit) {
