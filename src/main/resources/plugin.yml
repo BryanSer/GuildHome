@@ -8,8 +8,8 @@ commands:
     GuildHome:
         aliases: [gh]
         usage: |
-            §6/<command> >> 打开UI
-            §6/<command>> create [公会名] >> 创建公会(测试版不需要支付费用)
-            §6/<command> apply [公会] >> 申请加入公会
-            §6/<command> inv [玩家] >> 邀请一个玩家加入你的公会
-            §6/<command> disband >> 解散你的公会
+            §6/<command> >> §a打开公会菜单
+            §6/<command> create 公会名 >> §a创建公会(需要支付50000节操)
+            §6/<command> apply 公会名 >> §a申请加入公会
+            §6/<command> inv 玩家名 >> §a邀请该玩家加入你所在的公会
+            §d/<command> disband >> §c解散你的公会[只有会长可用,慎用,解散不能还原]

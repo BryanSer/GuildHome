@@ -24,6 +24,7 @@ object DonateService : Service(
                 val ps2 = this.prepareStatement("UPDATE ${DatabaseHandler.TABLE_GUILDHOME} SET CONTRIBUTION = CONTRIBUTION + ? WHERE ID = ?")
                 ps2.setInt(1, value)
                 ps2.setInt(2, member.gid)
+                ps2.executeUpdate()
             }
         }
     }

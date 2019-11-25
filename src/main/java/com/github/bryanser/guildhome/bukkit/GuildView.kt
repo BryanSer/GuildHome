@@ -157,7 +157,7 @@ object GuildView {
                             }
                             if (self.career >= Career.VP) {
                                 +" "
-                                +"§3§l=========公会基本管理========="
+                                +"§e§l=========公会基本管理========="
                                 +"§f按shift+右键 §3§l设置手持物品为公会图标"
                                 +"§f按shift+左键 §3§l在木牌填写设置公会信息"
                             }
@@ -327,29 +327,30 @@ object GuildView {
             icon(48) {
                 display {
                     ItemBuilder.createItem(Material.GOLD_BLOCK) {
-                        name("§e§l向公会捐献节操")
+                        name("§e§l向公会§a§l[贡献节操]")
                         lore {
-                            +"§6按下数字键1-9输入节操数量"
-                            +"§6如果要输入0请右键本物品"
-                            +"§b§l按下shift+左键确认捐赠"
-                            +"§a§l按下shift+右键清空数量"
+                            +"§c按下数字键 §b1到9 §c来输入节操数量"
+                            +"§c鼠标右击可输入数字 §b0 "
                             +"  "
-                            +"§e你当前输入的数量: $donate"
+                            +"§a按下shift+左键确认捐赠"
+                            +"§a按下shift+右键清空数量"
                             +"  "
-                            +"§e§l你的总贡献量: ${self.contribution}"
+                            +"§e你当前输入的节操数量: §d§l$donate"
+                            +"  "
+                            +"§e你目前的总贡献量: §b§l${self.contribution}"
                         }
                     }
                 }
                 click(ClickType.SHIFT_LEFT) {
                     val has = Utils.economy!!.getBalance(player)
                     if (has < donate) {
-                        player.sendMessage("§c你没有足够多的的节操来捐赠")
+                        player.sendMessage("§c§l你没有足够多的的节操来贡献给公会哦")
                         return@click
                     }
                     Utils.economy!!.withdrawPlayer(player, donate.toDouble())
                     Bukkit.getScheduler().runTaskLater(BukkitMain.Plugin, { player.closeInventory() }, 1)
                     DonateService.donate(donate,player)
-                    player.sendMessage("§6捐赠成功")
+                    player.sendMessage("§6§l捐赠成功,感谢你对公会的支持")
                     donate = 0
                 }
                 number { i ->
@@ -371,12 +372,12 @@ object GuildView {
             }
             icon(52) {
                 val dis = ItemBuilder.createItem(Material.OBSIDIAN) {
-                    name("§c退出公会")
+                    name("§c§l点击退出公会[有确认操作]")
                 }
                 val dis2 = ItemBuilder.createItem(Material.OBSIDIAN, amount = 64) {
-                    name("§c确认退出公会")
+                    name("§c§l[确认退出公会]")
                     lore {
-                        +"§6按下数字8键确认退出公会"
+                        +"§6§l请再按下数字键 §a§l8 §6§l来确认退出公会"
                     }
                 }
                 display {
@@ -397,7 +398,7 @@ object GuildView {
                         return@number
                     }
                     if (i == 7) {
-                        player.sendMessage("§6成功退出公会")
+                        player.sendMessage("§6§l已成功退出公会")
                         ExitGuildService.exit(player)
                         Bukkit.getScheduler().runTask(BukkitMain.Plugin, player::closeInventory)
                     }
@@ -428,7 +429,7 @@ object GuildView {
             }
             icon(49) {
                 val display = ItemBuilder.createItem(Material.SIGN) {
-                    name("§6点击打开所有公会列表")
+                    name("§6§l打开公会列表")
                 }
                 display {
                     display

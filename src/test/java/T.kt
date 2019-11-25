@@ -1,6 +1,8 @@
+import com.github.bryanser.guildhome.StringManager
 import com.github.bryanser.guildhome.database.Career
 import com.github.bryanser.guildhome.transform.DataTransform
 import com.github.bryanser.guildhome.transform.Transform
+import com.google.gson.Gson
 import org.junit.Assert
 import org.junit.Ignore
 import org.junit.Test
@@ -8,6 +10,24 @@ import java.io.Serializable
 
 @Ignore
 class T {
+
+    val gson = Gson()
+
+    @Test
+    fun testJson(){
+        val data = mutableMapOf<String,Any>()
+        val sub = mutableMapOf<String,Any>()
+        sub["test"] = "test"
+        sub["value"] = 1
+        data["sub"] = sub
+        data["version"] = "1.0"
+        val json = gson.toJson(data)
+        println("jons: \n$json")
+        val result = StringManager.fromJson(json)
+        println("result: $result")
+        val subm = result["sub"] as Map<String,Any>
+        println("sub: $subm")
+    }
 
     @Test
     fun testUntil(){

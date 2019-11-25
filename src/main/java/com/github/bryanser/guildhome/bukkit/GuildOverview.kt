@@ -14,7 +14,7 @@ import org.bukkit.entity.Player
 
 object GuildOverview {
     class GuildOverviewContext(p: Player) : KViewContext(
-            "§6公会列表"
+            "§3§l楼楼公会列表"
     ) {
         @Volatile
         var init: Boolean = false
@@ -72,8 +72,8 @@ object GuildOverview {
                     }
                 }
                 icon(49) {
-                    val display = ItemBuilder.createItem(Material.SIGN) {
-                        name("§6打开我的公会")
+                    val display = ItemBuilder.createItem(Material.EMERALD) {
+                        name("§6§l我的公会")
                     }
                     initDisplay {
                         if (init) {

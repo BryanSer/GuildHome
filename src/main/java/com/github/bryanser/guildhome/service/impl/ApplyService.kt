@@ -16,11 +16,11 @@ object ApplyService : Service(
         async {
             val guild = GuildManager.getGuildByName(name)
             if(guild == null){
-                p.sendSyncMsg("§c找不到名为${name}的公会")
+                p.sendSyncMsg("§c名为${name}的公会不存在,请确认公会名是否正确")
                 return@async
             }
             if(GuildManager.getMember(p.uniqueId) != null){
-                p.sendSyncMsg("§c你已经有公会了")
+                p.sendSyncMsg("§c你已经有公会了哦")
                 return@async
             }
             val msg = GuildManager.addApply(guild, p.uniqueId)

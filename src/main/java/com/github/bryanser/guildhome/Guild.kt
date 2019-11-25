@@ -47,14 +47,14 @@ data class GuildInfo(
                 GuildView.loadIcon(icon)
             }
             val item = ItemBuilder.createItem(iconItem.type, iconItem.amount, iconItem.durability.toInt()) {
-                name("§b公会: ${this@GuildInfo.name}")
+                name("§d公会: §6${this@GuildInfo.name}")
                 lore {
-                    +"§b会长: ${Bukkit.getOfflinePlayer(UUID.fromString(president))?.name ?: "找不到名字"}"
+                    +"§a会长: ${Bukkit.getOfflinePlayer(UUID.fromString(president))?.name ?: "找不到名字"}"
                     +"§a等级: $level"
                     +"§e公会总贡献值: $contribution"
-                    +"§6公会人数: ${memberSize}/${Guild.getMaxMemberSize(level)}"
-                    +"§b公会积分: $score"
-                    +"§e§l公会信息: "
+                    +"§e公会人数: ${memberSize}/${Guild.getMaxMemberSize(level)}"
+                    +"§6公会积分: $score"
+                    +"§6§l公会信息: "
                     for (motd in motd.split("\n")) {
                         +motd
                     }

@@ -11,3 +11,16 @@ Mysql:
         - 'rewriteBatchedStatements=true'
 Cost:
     Create: 1000.0
+#等级设定
+Level:
+    #默认等级 这个等级不需要花费和物品
+    '1':
+        #最大玩家数
+        MaxMember: 30
+    '2':
+        MaxMember: 50
+        #升级花费公会贡献量
+        Cost: 10000
+        #升级需要消耗的物品
+        Items:
+            - '388 1 0 Name:&6公会升级石'

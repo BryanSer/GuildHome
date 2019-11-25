@@ -26,29 +26,29 @@ object SetMemberCareerService : Service(
             }
             val ginfo = GuildManager.getMember(p.uniqueId) ?: return@async
             if (ginfo.career < Career.MANAGER) {
-                p.sendSyncMsg("§c权限异常")
+                p.sendSyncMsg("§c§l权限异常,请联系服主处理")
                 return@async
             }
             val tinfo = GuildManager.getMember(target)
             if (tinfo == null) {
-                p.sendSyncMsg("§c找不到对方公会信息")
+                p.sendSyncMsg("§c§l找不到对方公会信息")
                 return@async
             }
             if (tinfo.gid != gid) {
-                p.sendSyncMsg("§c你不能修改别的公会的信息")
+                p.sendSyncMsg("§c§l你不能修改别的公会的信息")
                 return@async
             }
             if (ginfo.career <= tinfo.career) {
-                p.sendSyncMsg("§c权限异常")
+                p.sendSyncMsg("§c§l权限异常,请联系服主处理")
                 return@async
             }
             if (career == Career.MEMBER) {
                 GuildSetManager.updateMember(gid, target, Key.CARREER, career)
-                p.sendSyncMsg("§c已成功取消对方职位")
+                p.sendSyncMsg("§c已成功取消该玩家的公会职位")
                 return@async
             }
             GuildSetManager.updateMember(gid, target, Key.CARREER, career)
-            p.sendSyncMsg("§c已成功设定对方职位")
+            p.sendSyncMsg("§c已成功给予该玩家的公会职位")
         }
     }
 

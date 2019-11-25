@@ -25,7 +25,7 @@ object ApplyMemberService : Service(
                 return@async
             }
             if (ginfo.career < Career.MANAGER) {
-                p.sendSyncMsg("§c你没有权限同意或拒绝加入请求")
+                p.sendSyncMsg("§c你没有权限同意或拒绝申请请求")
                 return@async
             }
             if (accept) {
@@ -35,10 +35,10 @@ object ApplyMemberService : Service(
 
                 p.sendSyncMsg(s)
                 if (msg) {
-                    if (s != "§c请求处理失败: 对方已经加入了别的公会") {
+                    if (s != "§c请求处理失败: §e对方已经加入了别的公会") {
                         target.sendMsg(s)
                     } else {
-                        target.sendMsg("§c请求处理失败: 你已经有公会了")
+                        target.sendMsg("§c请求处理失败: §e你已经在一个公会里了")
                     }
                 }
             } else {

@@ -149,10 +149,10 @@ class BukkitMain : JavaPlugin() {
         if (args[0].equals("create", true)) {
             val has = Utils.economy!!.getBalance(sender)
             if (has < create_cost) {
-                sender.sendMessage("§c你没有足够的节操来创建公会, 至少需要${create_cost}")
+                sender.sendMessage("§c§l你没有足够的节操来创建公会,需要${create_cost}节操才可创建")
                 return true
             }
-            sender.sendMessage("§6正在预扣除节操来创建公会 在完成创建前请勿离开服务器")
+            sender.sendMessage("§6§l正在预扣除节操来创建公会,在完成创建前请勿离开服务器")
             Utils.economy!!.withdrawPlayer(sender, create_cost)
             val name = args[1]
             CreateGuildService.createGuild(name, sender)
@@ -166,37 +166,37 @@ class BukkitMain : JavaPlugin() {
         if (args[0].equals("inv", true)) {
             val target = Bukkit.getPlayerExact(args[1])
             if (target == null || !target.isOnline) {
-                sender.sendMessage("§c找不到玩家${args[1]}")
+                sender.sendMessage("§c找不到在线玩家 §a${args[1]} §b请确认名称是否正确或在线")
                 return true
             }
             if (target == sender) {
-                sender.sendMessage("§c你不能邀请你自己")
+                sender.sendMessage("§a你不能邀请你自己哦")
                 return true
             }
-            sender.sendMessage("§6邀请已发送")
+            sender.sendMessage("§6§l邀请已发送给该玩家")
             Bukkit.getScheduler().runTaskAsynchronously(this) {
                 val member = GuildManager.getMember(sender.uniqueId)
                 if (member == null) {
                     Bukkit.getScheduler().runTask(this) {
-                        sender.sendMessage("§c你还没有在任何一个公会里 无法邀请对方")
+                        sender.sendMessage("§b§l你还没有在任何一个公会里,无法邀请对方加入")
                     }
                     return@runTaskAsynchronously
                 }
                 val guild = GuildManager.getGuild(member.gid) ?: return@runTaskAsynchronously
                 Bukkit.getScheduler().runTask(this) {
-                    target.sendMessage("§6玩家${sender.name}邀请你加入他的公会${guild.name}")
-                    CallBack.sendButtonRequest(target, arrayOf("§a==同意==", "§c==拒绝=="), { p, i ->
+                    target.sendMessage("§6§l玩家 §b§l${sender.name} §6§l邀请你加入他的公会 §e§l${guild.name}")
+                    CallBack.sendButtonRequest(target, arrayOf("§a§l[点我同意]", "§c§l[点我拒绝]"), { p, i ->
                         if (i == 0) {
-                            p.sendMessage("§6正在同意来自${target.name}的公会邀请")
-                            sender.sendMessage("§e§l${target.name}同意了你的公会邀请")
+                            p.sendMessage("§e§l正在同意来自 §a§l${target.name} §e§l的公会邀请")
+                            sender.sendMessage("§e§l${target.name} §a§l同意了你的公会邀请")
                             if (member.career >= Career.MANAGER) {
                                 ApplyMemberService.acceptApply(guild.id, target.uniqueId, sender, true)
                             } else {
                                 p.chat("/GuildHome apply ${guild.name}")
                             }
                         } else {
-                            p.sendMessage("§6已成功拒绝来自${target.name}的公会邀请")
-                            sender.sendMessage("§c${target.name}拒绝了你的公会邀请")
+                            p.sendMessage("§c§l已成功拒绝来自 §b§l${target.name} §c§l的公会邀请")
+                            sender.sendMessage("§c§l${target.name} §e§l拒绝了你的公会邀请")
                         }
                     }, 30)
                 }

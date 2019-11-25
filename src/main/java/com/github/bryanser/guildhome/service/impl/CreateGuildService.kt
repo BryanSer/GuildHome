@@ -24,21 +24,21 @@ object CreateGuildService : Service(
         async {
             if (name.length > 5) {
                 sync {
-                    p.sendMessage(*TextComponent.fromLegacyText("§c无法创建${name}公会, 公会名字过长"))
+                    p.sendMessage(*TextComponent.fromLegacyText("§c无法创建${name}公会,公会名仅限五个字符哦"))
                     CreateSuccessService.success(false, p)
                 }
                 return@async
             }
             if(!name.matches("^[\\u4e00-\\u9fa50-9a-zA-Z]*".toRegex())){
                 sync {
-                    p.sendMessage(*TextComponent.fromLegacyText("§c无法创建${name}公会, 公会名字含有特殊字符"))
+                    p.sendMessage(*TextComponent.fromLegacyText("§c无法创建${name}公会,公会名含有特殊字符"))
                     CreateSuccessService.success(false, p)
                 }
                 return@async
             }
             val pi = GuildManager.getMember(p.uniqueId)
             if (pi != null) {
-                p.sendSyncMsg("§c无法创建${name}公会, 你已经在一个公会里了")
+                p.sendSyncMsg("§c无法创建${name}公会,你已经在一个公会里了")
                 sync {
                     CreateSuccessService.success(false, p)
                 }
@@ -46,7 +46,7 @@ object CreateGuildService : Service(
             }
             val guild = GuildManager.getGuildByName(name)
             if (guild != null) {
-                p.sendSyncMsg("§c无法创建${name}公会, 已存在同名公会")
+                p.sendSyncMsg("§c无法创建${name}公会,已存在相同名称公会")
                 sync {
                     CreateSuccessService.success(false, p)
                 }
@@ -54,12 +54,12 @@ object CreateGuildService : Service(
             }
             val (id, reason) = GuildSetManager.createGuild(name, p.uniqueId)
             if (id == null) {
-                p.sendSyncMsg("§c无法创建${name}公会, $reason")
+                p.sendSyncMsg("§c无法创建${name}公会,$reason")
                 sync {
                     CreateSuccessService.success(false, p)
                 }
             } else {
-                p.sendSyncMsg("§6公会创建成功: ID-$id")
+                p.sendSyncMsg("§a§l恭喜! ${name} 公会创建成功")
                 sync {
                     CreateSuccessService.success(true, p)
                 }
@@ -72,7 +72,7 @@ object CreateGuildService : Service(
             val pi = GuildManager.getMember(from.uniqueId)
             if (pi != null) {
                 sync {
-                    from.sendMessage("§c无法创建${name}公会, 你已经在一个公会里了")
+                    from.sendMessage("§c无法创建${name}公会,你已经在一个公会里了")
                     CreateSuccessService.onReceive(mutableMapOf(
                             "UUID" to from.uniqueId.toString(),
                             "Success" to false
@@ -83,7 +83,7 @@ object CreateGuildService : Service(
             val guild = GuildManager.getGuildByName(name)
             if (guild != null) {
                 sync {
-                    from.sendMessage("§c无法创建${name}公会, 已存在同名公会")
+                    from.sendMessage("§c无法创建${name}公会,已存在相同名称公会")
                     CreateSuccessService.onReceive(mutableMapOf(
                             "UUID" to from.uniqueId.toString(),
                             "Success" to false

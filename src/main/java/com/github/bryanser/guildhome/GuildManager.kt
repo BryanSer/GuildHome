@@ -115,7 +115,7 @@ object GuildManager {
             ps.setString(2, from.toString())
             val rs = ps.executeQuery()
             if (rs.next()) {
-                return "§c申请失败, 你已经申请过了"
+                return "§c§l申请失败,你已经向该公会申请过了"
             }
         }
         DatabaseHandler.sql {
@@ -126,7 +126,7 @@ object GuildManager {
             ps.executeUpdate()
         }
 
-        return "§6申请成功"
+        return "§a§l申请成功,请等待公会管理处理吧"
     }
 
     fun getApplySize(gid: Int): Int {
@@ -163,12 +163,12 @@ object GuildManager {
                 ps.setString(1, uuid.toString())
                 ps.executeQuery()
             }
-            return "§c请求处理失败: 对方已经加入了别的公会"
+            return "§c请求处理失败: §e§l对方已经加入了别的公会"
         }
-        val guild = this.getGuild(gid) ?: return "§c请求处理失败: 找不到公会"
+        val guild = this.getGuild(gid) ?: return "§c请求处理失败: §e找不到该公会"
         val size = this.getMemberSize(gid)
         if (size >= Guild.getMaxMemberSize(guild.level)) {
-            return "§c请求处理失败: 公会人数已满"
+            return "§c请求处理失败: §e公会人数已满"
         }
         DatabaseHandler.sql(true) {
             val ps = this.prepareStatement("DELETE FROM ${DatabaseHandler.TABLE_GUILD_APPLY} WHERE NAME = ?")
@@ -180,7 +180,7 @@ object GuildManager {
                 "§6========§c[公会公告]§6========",
                 "§c§l成员${name}加入了公会"
         )
-        return "§6请求同意成功"
+        return "§6§l对方同意了你的邀请"
     }
 
     fun refuse(gid: Int, uuid: UUID): String {
@@ -191,9 +191,9 @@ object GuildManager {
                 ps.setString(1, uuid.toString())
                 ps.executeUpdate()
             }
-            return "§c请求处理失败: 对方已经加入了别的公会"
+            return "§c请求处理失败: §a对方已经加入了别的公会"
         }
-        this.getGuild(gid) ?: return "§c请求处理失败: 找不到公会"
+        this.getGuild(gid) ?: return "§c请求处理失败: §b找不到该公会"
         DatabaseHandler.sql(false) {
             val ps = this.prepareStatement("DELETE FROM ${DatabaseHandler.TABLE_GUILD_APPLY} WHERE NAME = ? AND GID = ?")
             ps.setString(1, uuid.toString())
