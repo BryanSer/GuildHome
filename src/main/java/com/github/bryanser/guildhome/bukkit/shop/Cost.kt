@@ -15,26 +15,26 @@ class Cost(config: ConfigurationSection) {
     fun checkCost(context: ShopViewContext): Boolean {
         context.run {
             if (level > guild.level) {
-                player.sendMessage("§c公会等级不足")
+                player.sendMessage("§c你的公会等级不足")
                 return false
             }
             if (guild.contribution < contribution) {
-                player.sendMessage("§c公会贡献不足")
+                player.sendMessage("§c你的公会贡献不足")
                 return false
             }
             if (self.career.level < permission) {
-                player.sendMessage("§c你的公会权限不能购买这个东西")
+                player.sendMessage("§c你在公会的级别不能购买这个东西")
                 return false
             }
             if (money > 0) {
                 val has = Utils.economy!!.getBalance(player)
                 if (has < money) {
-                    player.sendMessage("§c你的金钱不足")
+                    player.sendMessage("§c所需的节操不足")
                     return false
                 }
             }
             if (items.isNotEmpty() && !Br.API.Utils.hasEnoughItems(player, items)) {
-                player.sendMessage("§c你的物品不足")
+                player.sendMessage("§c所需的物品不足")
                 return false
             }
         }

@@ -50,7 +50,7 @@ abstract class Service(
     }
 
     companion object {
-        const val DEBUG = true
+        const val DEBUG = false
         val services = mutableMapOf<String, Service>()
         var bukkit: Boolean = false
 

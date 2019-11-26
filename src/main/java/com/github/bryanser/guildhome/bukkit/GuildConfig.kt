@@ -39,7 +39,7 @@ object GuildConfig : Listener {
         val dm = cache[d.uniqueId] as? Member ?: return
         if (pm.gid == dm.gid) {
             evt.isCancelled = true
-            d.sendMessage("§c你不能攻击和你同公会的人")
+            d.sendMessage("§e§l你不能攻击和你相同公会的人哦")
         }
     }
 

@@ -4,6 +4,7 @@ import Br.API.CallBack
 import com.github.bryanser.brapi.Utils
 import com.github.bryanser.brapi.kview.KViewHandler
 import com.github.bryanser.guildhome.*
+import com.github.bryanser.guildhome.bukkit.shop.ShopViewContext
 import com.github.bryanser.guildhome.database.Career
 import com.github.bryanser.guildhome.database.DatabaseHandler
 import com.github.bryanser.guildhome.service.BukkitListener
@@ -34,6 +35,7 @@ class BukkitMain : JavaPlugin() {
         register()
         GuildConfig.init()
         Bukkit.getPluginManager().registerEvents(GuildConfig, this)
+        ShopViewContext.loadShop()
     }
 
     fun register() {
@@ -45,8 +47,8 @@ class BukkitMain : JavaPlugin() {
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             object : EZPlaceholderHook(this, "guildhome") {
                 override fun onPlaceholderRequest(p: Player, params: String): String? {
-                    val member = GuildConfig.cache[p.uniqueId] as? Member ?: return "无所属公会"
-                    val guild =  GuildConfig.guilds[member.gid] ?: return "数据读取中"
+                    val member = GuildConfig.cache[p.uniqueId] as? Member ?: return ""
+                    val guild =  GuildConfig.guilds[member.gid] ?: return ""
                     return when (params) {
                         "name" -> {
                             guild.name
@@ -126,6 +128,7 @@ class BukkitMain : JavaPlugin() {
             }
             val cfg = YamlConfiguration.loadConfiguration(f)
             GuildConfig.loadConfig(cfg)
+            ShopViewContext.loadShop()
             sender.sendMessage("§6重载成功")
             return true
         }

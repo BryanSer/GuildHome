@@ -72,7 +72,7 @@ class Exp(cs: ConfigurationSection) : Item(cs) {
             if (System.currentTimeMillis() > endTime) {
                 return -1.0
             }
-            if (!world.contains(p.world.name)) {
+            if (world.isNotEmpty() && !world.contains(p.world.name)) {
                 return null
             }
             if (allGuild) {

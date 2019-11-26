@@ -14,6 +14,7 @@ import com.github.bryanser.brapi.kview.builder.KViewMaker
 import com.github.bryanser.guildhome.Guild
 import com.github.bryanser.guildhome.GuildManager
 import com.github.bryanser.guildhome.Member
+import com.github.bryanser.guildhome.bukkit.shop.ShopViewContext
 import com.github.bryanser.guildhome.bukkit.util.SignUtils
 import com.github.bryanser.guildhome.database.Career
 import com.github.bryanser.guildhome.service.impl.*
@@ -320,20 +321,20 @@ object GuildView {
                             +"§b§l公会当前等级: ${guild.level}"
                             +"§a最大可容纳人数: ${Guild.getMaxMemberSize(guild.level)}"
                             if (guild.level >= Guild.maxLevel) {
-                                +"§b已达到最大等级"
+                                +"§b§l公会已达到最大等级"
                             } else {
                                 val cost = GuildConfig.costItem[guild.level + 1]
                                 if (cost == null) {
-                                    +"§c§l无法升级"
+                                    +"§c§l已无法再升级"
                                 } else {
-                                    +"§6升级需要贡献量: ${cost.cost}"
+                                    +"§6升级需要扣除公会贡献量: ${cost.cost}"
                                     for (info in cost.info) {
                                         +info
                                     }
                                     if (self.career == Career.PRESIDENT) {
-                                        +"§c左键点击升级公会"
+                                        +"§e左键点击升级公会"
                                     } else {
-                                        +"§c只有会长可以升级公会"
+                                        +"§b[只有会长可以升级公会]"
                                     }
                                 }
                             }
@@ -349,26 +350,26 @@ object GuildView {
                     }
                     val cost = GuildConfig.costItem[guild.level + 1]
                     if (guild.level >= Guild.maxLevel) {
-                        player.sendMessage("§c公会已经无法升级了")
+                        player.sendMessage("§d§l公会已经无法升级了")
                         return@click
                     }
                     if (cost == null) {
-                        player.sendMessage("§c公会已经无法升级了")
+                        player.sendMessage("§d§l公会已经无法升级了")
                         return@click
                     }
                     if (guild.contribution < cost.cost) {
-                        player.sendMessage("§c公会贡献值不足 无法升级")
+                        player.sendMessage("§e§l公会贡献值不足 无法升级")
                         return@click
                     }
                     if (!Br.API.Utils.hasEnoughItems(player, cost.items)) {
-                        player.sendMessage("§c你身上没有足够升级公会的物品")
+                        player.sendMessage("§e§l你身上没有足够升级公会的公会升级道具")
                         return@click
                     }
                     Br.API.Utils.removeItem(player, cost.items)
                     LevelUpService.levelUp(guild.id, cost.cost, player)
                     BroadcastMessageService.broadcast(guild.id, player,
-                            "§6公会公告",
-                            "§b公会等级提升"
+                            "§6§l=====§a§l公会公告§6§l=====",
+                            "§b§l  会长提升了本公会的等级"
                     )
                     this.laterReload(player, 20)
                 }
@@ -410,6 +411,7 @@ object GuildView {
                             +"§e你当前输入的节操数量: §d§l$donate"
                             +"  "
                             +"§e你目前的总贡献量: §b§l${self.contribution}"
+                            +"§a§l[请在大写或英文输入状态下才能键入数字键哦]"
                         }
                     }
                 }
@@ -457,6 +459,25 @@ object GuildView {
                 click {
                     if (!ignoreClick) {
                         KViewHandler.openUI(player, GuildOverview.view)
+                    }
+                }
+            }
+            icon(50) {
+                val dis = ItemBuilder.createItem(Material.DIAMOND_BLOCK) {
+                    name("§a§l打开公会商店[加成/道具]")
+                }
+                display {
+                    if (ShopViewContext.hasShop) {
+                        dis
+                    } else {
+                        null
+                    }
+                }
+                click {
+                    if (!ignoreClick && ShopViewContext.hasShop) {
+                        KViewHandler.openUI(player, ShopViewContext.views[0])
+                        ignoreClick = true
+                        init = false
                     }
                 }
             }

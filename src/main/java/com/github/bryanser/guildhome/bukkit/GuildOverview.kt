@@ -73,7 +73,7 @@ object GuildOverview {
                 }
                 icon(49) {
                     val display = ItemBuilder.createItem(Material.EMERALD) {
-                        name("§6§l我的公会")
+                        name("§6§l打开我的公会")
                     }
                     initDisplay {
                         if (init) {

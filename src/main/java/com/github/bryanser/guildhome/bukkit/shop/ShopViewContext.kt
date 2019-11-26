@@ -60,6 +60,7 @@ class ShopViewContext(p: Player) : KViewContext(title) {
         lateinit var title: String
         lateinit var views: Array<KView<ShopViewContext>>
 
+        var hasShop = false
         fun loadShop() {
             val f = File(BukkitMain.Plugin.dataFolder, "shop.yml")
             if (!f.exists()) {
@@ -69,6 +70,7 @@ class ShopViewContext(p: Player) : KViewContext(title) {
             val setting = config.getConfigurationSection("Setting")
             title = ChatColor.translateAlternateColorCodes('&', setting.getString("title"))
             val maxPage = setting.getInt("maxPage", 1)
+            hasShop = maxPage > 0
             val contents = config.getConfigurationSection("Contents")
             views = Array(maxPage) {
                 val viewPage = it
