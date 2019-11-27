@@ -17,6 +17,7 @@ import com.github.bryanser.guildhome.Member
 import com.github.bryanser.guildhome.bukkit.shop.ShopViewContext
 import com.github.bryanser.guildhome.bukkit.util.SignUtils
 import com.github.bryanser.guildhome.database.Career
+import com.github.bryanser.guildhome.database.UserName
 import com.github.bryanser.guildhome.service.impl.*
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
@@ -212,8 +213,8 @@ object GuildView {
                         val (index, career) = calcIndex(i)
                         val m = members[career]?.getOrNull(index) ?: return@display null
                         ItemBuilder.createItem(Material.SKULL_ITEM, durability = 3) {
-                            val p = Bukkit.getOfflinePlayer(m.uuid)
-                            name("${m.career.display}: ${p.name}")
+                            val p = UserName(m.uuid)
+                            name("${m.career.display}: ${p}")
                             lore {
                                 +"§6§l该玩家贡献值: §a§l${m.contribution}"
                                 if (self.career > m.career) {
@@ -235,7 +236,7 @@ object GuildView {
                             }
                             onBuild {
                                 val im = itemMeta as SkullMeta
-                                im.owner = p?.name ?: return@onBuild this
+                                im.owner = p ?: return@onBuild this
                                 itemMeta = im
                                 this
                             }
@@ -257,7 +258,7 @@ object GuildView {
                         if (self.career <= m.career) {
                             return@number
                         }
-                        val p = Bukkit.getOfflinePlayer(m.uuid) ?: return@number
+                        val p = UserName(m.uuid)
                         if (self.career == Career.PRESIDENT && num == VP_NUM) {
                             if (m.career == Career.VP) {
                                 player.sendMessage("§4§l你正在撤销对方的副会长职位")
@@ -286,7 +287,7 @@ object GuildView {
                         } else if (num == KICK_NUM) {
                             BroadcastMessageService.broadcast(guild.id, player,
                                     "§6========§c[公会公告]§6========",
-                                    "§a§l公会的 ${p.name} §b§l已被 ${player.name} §c§l踢出了公会"
+                                    "§a§l公会的 ${p} §b§l已被 ${player.name} §c§l踢出了公会"
                             )
                             KickMemberService.kick(guild.id, m.uuid, player)
                         } else {
@@ -596,9 +597,9 @@ object GuildView {
                 icon(i) {
                     display2 {
                         val (uuid, time) = apply.getOrNull(i + page * 45) ?: return@display2 null
-                        val p = Bukkit.getOfflinePlayer(uuid)
+                        val p = UserName(uuid)
                         ItemBuilder.createItem(Material.SKULL_ITEM, durability = 3) {
-                            name("§a§l玩家: ${p?.name ?: "§6§l找不到名字"}")
+                            name("§a§l玩家: ${p ?: "§6§l找不到名字"}")
                             lore {
                                 +"§a申请日期: ${dateFormat.format(Date(time))}"
                                 +"  "
@@ -607,7 +608,7 @@ object GuildView {
                             }
                             onBuild {
                                 val im = itemMeta as SkullMeta
-                                im.owner = p.name ?: return@onBuild this
+                                im.owner = p ?: return@onBuild this
                                 itemMeta = im
                                 this
                             }

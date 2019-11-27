@@ -88,6 +88,12 @@ object DatabaseHandler {
                     FOREIGN KEY (GID) REFERENCES GuildHome(ID)
                ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4
             """)
+            sta.execute("""
+               CREATE TABLE IF NOT EXISTS GuildUserName(
+                    UUID VARCHAR(80) NOT NULL PRIMARY KEY,
+                    NAME VARCHAR(80)
+               )  ENGINE = InnoDB DEFAULT CHARSET=utf8mb4
+            """)
             try {
                 sta.execute("""
                 CREATE VIEW V_GuildSize(GID, SIZE) AS(

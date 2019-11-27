@@ -39,8 +39,116 @@ abstract class Item(
         init {
             items["ICON"] = ::Icon
             items["EXP"] = ::Exp
+            items["COMMAND"] = ::Command
         }
     }
+}
+
+class Loot(cs: ConfigurationSection) : Item(cs) {
+
+    val guildKey: String = cs.getString("Config.GuildKey", "null")
+    val cost: Cost = Cost(cs.getConfigurationSection("Config.cost"))
+    val allGuild: Boolean = cs.getBoolean("Config.allGuild", true)
+    val message: List<String>
+    val broadcast: Array<String>
+    val time: Double
+
+
+    init {
+        val config = cs.getConfigurationSection("Config")
+        time = config.getDouble("time")
+        message = config.getStringList("message")?.map { ChatColor.translateAlternateColorCodes('&', it) }
+                ?: mutableListOf()
+        broadcast = config.getStringList("broadcast")?.map { ChatColor.translateAlternateColorCodes('&', it) }?.toTypedArray()
+                ?: arrayOf()
+    }
+
+    inner class ActiveLoot(
+            val owner: String,
+            val gid: Int
+    ) {
+
+        val endTime = System.currentTimeMillis() + (time * 60 * 1000L).toLong()
+
+        fun isActive(p: Player, key: String): Boolean? {
+            if (System.currentTimeMillis() > endTime) {
+                this.end()
+                return null
+            }
+            if (key != guildKey) {
+                return false
+            }
+            if (allGuild) {
+                return true
+            }
+            if (owner == p.name) {
+                return true
+            }
+            return false
+        }
+
+        fun end() {
+            if (allGuild) {
+                val all = Utils.getOnlinePlayers()
+                if (all.isEmpty()) {
+                    return
+                }
+                BroadcastMessageService.broadcast(gid, all.first(), "§6公会加成已结束")
+            } else {
+                Bukkit.getPlayer(owner)?.sendMessage("§6你的公会个人加成已结束")
+            }
+        }
+    }
+
+    override fun build(view: KViewBuilder<ShopViewContext>): KIcon<ShopViewContext> {
+        return view.icon {
+            display {
+                super.display
+            }
+            click {
+                if (!init) {
+                    return@click
+                }
+                if (cost.checkCost(this)) {
+                    cost.cost(this)
+                    val list = activing.getOrPut(guild.id) { mutableListOf() }
+                    list += ActiveLoot(player.name, guild.id)
+                    if (message.isNotEmpty()) {
+                        for (msg in message.map { it.replace("%player%", player.name) }) {
+                            player.sendMessage(msg)
+                        }
+                    }
+                    if (broadcast.isNotEmpty()) {
+                        BroadcastMessageService.broadcast(guild.id, player, *(broadcast.map { it.replace("%player%", player.name) }.toTypedArray()))
+                    }
+                }
+            }
+        }
+    }
+
+    companion object {
+        val activing = mutableMapOf<Int, MutableList<ActiveLoot>>()
+
+        fun isActiving(key: String, p: Player): Boolean {
+            val m = GuildConfig.cache[p.uniqueId] as? Member ?: return false
+            val it = activing[m.gid]?.iterator() ?: return false
+            while (it.hasNext()) {
+                val al = it.next()
+                val t = al.isActive(p, key)
+                if (t == null) {
+                    it.remove()
+                    continue
+                }
+                if (t) {
+                    return true
+                }
+            }
+
+            return false
+        }
+
+    }
+
 }
 
 class Icon(config: ConfigurationSection) : Item(config) {
@@ -51,6 +159,62 @@ class Icon(config: ConfigurationSection) : Item(config) {
             }
         }
     }
+}
+
+class Command(cs: ConfigurationSection) : Item(cs) {
+
+    val commands = cs.getStringList("Config.commands").map {
+        val s = it.split(":".toRegex(), 2)
+        val value = s[1]
+        val t: (Player) -> Unit = when (s[0]) {
+            "p" -> { p: Player ->
+                Bukkit.dispatchCommand(p, value.replace("%player%", p.name))
+            }
+            "c" -> { p: Player ->
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), value.replace("%player%", p.name))
+            }
+            "op" -> { p: Player ->
+                val op = p.isOp
+                try {
+                    p.isOp = true
+                    Bukkit.dispatchCommand(p, value.replace("%player%", p.name))
+                } finally {
+                    p.isOp = op
+                }
+            }
+            "message" -> {
+                val msg = ChatColor.translateAlternateColorCodes('&', value)
+                val t: (Player) -> Unit = {
+                    it.sendMessage(msg)
+                }
+                t
+            }
+            else -> { p: Player -> Unit }
+        }
+        t
+    }
+    val cost: Cost = Cost(cs.getConfigurationSection("Config.cost"))
+
+
+    override fun build(view: KViewBuilder<ShopViewContext>): KIcon<ShopViewContext> {
+        return view.icon {
+            display {
+                super.display
+            }
+            click {
+                if (!init) {
+                    return@click
+                }
+                if (cost.checkCost(this)) {
+                    cost.cost(this)
+                    for (v in commands) {
+                        v(player)
+                    }
+                }
+            }
+        }
+    }
+
 }
 
 class Exp(cs: ConfigurationSection) : Item(cs) {
@@ -70,6 +234,7 @@ class Exp(cs: ConfigurationSection) : Item(cs) {
 
         fun getEffect(p: Player): Double? {
             if (System.currentTimeMillis() > endTime) {
+                this.end()
                 return -1.0
             }
             if (world.isNotEmpty() && !world.contains(p.world.name)) {
@@ -82,6 +247,18 @@ class Exp(cs: ConfigurationSection) : Item(cs) {
                 return effect
             }
             return null
+        }
+
+        fun end() {
+            if (allGuild) {
+                val all = Utils.getOnlinePlayers()
+                if (all.isEmpty()) {
+                    return
+                }
+                BroadcastMessageService.broadcast(gid, all.first(), "§6公会加成已结束")
+            } else {
+                Bukkit.getPlayer(owner)?.sendMessage("§6你的公会个人加成已结束")
+            }
         }
     }
 

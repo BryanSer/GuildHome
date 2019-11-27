@@ -85,6 +85,12 @@ class ShopViewContext(p: Player) : KViewContext(title) {
                             +index += item.build(this)
                         }
                     }
+                    icon(49) {
+                        initDisplay(ItemBuilder.createItem(Material.DIAMOND) { name("§r[§b§l点击返回公会界面§r]") })
+                        click {
+                            KViewHandler.openUI(player, GuildView.view)
+                        }
+                    }
                     if (viewPage > 0) {
                         icon(45) {
                             val prev = ItemBuilder.createItem(Material.ARROW) {

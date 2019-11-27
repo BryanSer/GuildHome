@@ -13,6 +13,69 @@ Contents:
         #EXP 经验加成商品
         Type: ICON
         Display: '160 1 5 Name:&a装饰用绿色玻璃板'
+    '2':
+        Type: LOOT
+        Display: '384 1 0 Name:&6掉落加成'
+        Config:
+            GuildKey: 'test'
+            time: 10.0
+            #是否是全公会效果
+            allGuild: true
+            #购买后的信息
+            message:
+                - '&a你成功购买了公会经验加成'
+            #购买后的公告
+            broadcast:
+                - '&b公会会长%player%刚刚购买了公会经验加成'
+            #消耗与限制
+            cost:
+                #至少需要等级
+                level: 2
+                #消耗贡献量
+                contribution: 100
+                #消耗物品
+                item:
+                    - '388 1 0 Name:&6公会升级石'
+                #什么权限级别的可以买
+                #0表示所有人
+                #1表示管理员
+                #2表示副会长
+                #3表示会长 默认3
+                permission: 3
+                #消耗自己的金钱
+                money: 1000
+            
+    '1':
+        Type: COMMAND
+        Display: '384 1 0 Name:&6兑换命令'
+        Config:
+            #执行的命令
+            #c开头表示控制台
+            #p表示玩家
+            #op表示以op权限执行
+            #message表示提示信息
+            #%player%为玩家名字变量
+            commands:
+                - 'message:&7你刚刚对换了命令'
+                - 'c:eco give %playe% 100'
+            #消耗与限制
+            cost:
+                #至少需要等级
+                level: 2
+                #消耗贡献量
+                contribution: 100
+                #消耗物品
+                item:
+                    - '388 1 0 Name:&6公会升级石'
+                #什么权限级别的可以买
+                #0表示所有人
+                #1表示管理员
+                #2表示副会长
+                #3表示会长 默认3
+                permission: 3
+                #消耗自己的金钱
+                money: 1000
+        
     #表示第二行第一个
     '9':
         Type: EXP

@@ -2,6 +2,7 @@ package com.github.bryanser.guildhome
 
 import com.github.bryanser.brapi.ItemBuilder
 import com.github.bryanser.guildhome.bukkit.GuildView
+import com.github.bryanser.guildhome.database.UserName
 import org.bukkit.Bukkit
 import org.bukkit.inventory.ItemStack
 import java.util.*
@@ -54,7 +55,7 @@ data class GuildInfo(
             val item = ItemBuilder.createItem(iconItem.type, iconItem.amount, iconItem.durability.toInt()) {
                 name("§d公会: §6${this@GuildInfo.name}")
                 lore {
-                    +"§a会长: ${Bukkit.getOfflinePlayer(UUID.fromString(president))?.name ?: "找不到名字"}"
+                    +"§a会长: ${UserName[(UUID.fromString(president))]?: "找不到名字"}"
                     +"§a等级: $level"
                     +"§e公会总贡献值: $contribution"
                     +"§e公会人数: ${memberSize}/${Guild.getMaxMemberSize(level)}"

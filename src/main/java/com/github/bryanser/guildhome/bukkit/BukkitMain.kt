@@ -7,6 +7,7 @@ import com.github.bryanser.guildhome.*
 import com.github.bryanser.guildhome.bukkit.shop.ShopViewContext
 import com.github.bryanser.guildhome.database.Career
 import com.github.bryanser.guildhome.database.DatabaseHandler
+import com.github.bryanser.guildhome.database.UserName
 import com.github.bryanser.guildhome.service.BukkitListener
 import com.github.bryanser.guildhome.service.Service
 import com.github.bryanser.guildhome.service.impl.ApplyMemberService
@@ -54,7 +55,7 @@ class BukkitMain : JavaPlugin() {
                             guild.name
                         }
                         "president" -> {
-                            Bukkit.getOfflinePlayer(UUID.fromString(guild.president))?.name
+                            UserName(UUID.fromString(guild.president))
                                     ?: ""
                         }
                         "size" -> "${guild.memberSize}"

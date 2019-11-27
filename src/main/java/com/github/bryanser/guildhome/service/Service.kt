@@ -28,7 +28,7 @@ abstract class Service(
         if (bukkitSend && !bukkit) {
             throw IllegalStateException("这个数据不应该由Bukkit发送")
         }
-//        data["SendID"] = UUID.randomUUID().toString()
+        data["SendID"] = UUID.randomUUID().toString()
         data["Service"] = name
         val realData = mutableMapOf<String, Any>()
         val sign = sign(data.toAuthString())
