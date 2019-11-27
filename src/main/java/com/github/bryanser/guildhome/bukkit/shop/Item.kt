@@ -40,6 +40,7 @@ abstract class Item(
             items["ICON"] = ::Icon
             items["EXP"] = ::Exp
             items["COMMAND"] = ::Command
+            items["LOOT"] = ::Loot
         }
     }
 }
