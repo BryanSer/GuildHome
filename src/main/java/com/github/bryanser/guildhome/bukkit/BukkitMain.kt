@@ -4,6 +4,8 @@ import Br.API.CallBack
 import com.github.bryanser.brapi.Utils
 import com.github.bryanser.brapi.kview.KViewHandler
 import com.github.bryanser.guildhome.*
+import com.github.bryanser.guildhome.bukkit.shop.Exp
+import com.github.bryanser.guildhome.bukkit.shop.Loot
 import com.github.bryanser.guildhome.bukkit.shop.ShopViewContext
 import com.github.bryanser.guildhome.database.Career
 import com.github.bryanser.guildhome.database.DatabaseHandler
@@ -37,6 +39,8 @@ class BukkitMain : JavaPlugin() {
         GuildConfig.init()
         Bukkit.getPluginManager().registerEvents(GuildConfig, this)
         ShopViewContext.loadShop()
+        Loot.load()
+        Exp.load()
     }
 
     fun register() {
@@ -45,45 +49,45 @@ class BukkitMain : JavaPlugin() {
         Channel.sendProxy = { it, p ->
             (p as Player).sendPluginMessage(this, Channel.BUKKIT2BUNGEE, it.toByteArray())
         }
-        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            object : EZPlaceholderHook(this, "guildhome") {
-                override fun onPlaceholderRequest(p: Player, params: String): String? {
-                    val member = GuildConfig.cache[p.uniqueId] as? Member ?: return ""
-                    val guild =  GuildConfig.guilds[member.gid] ?: return ""
-                    return when (params) {
-                        "name" -> {
-                            guild.name
-                        }
-                        "president" -> {
-                            UserName(UUID.fromString(guild.president))
-                                    ?: ""
-                        }
-                        "size" -> "${guild.memberSize}"
-                        "score" -> "${guild.score}"
-                        "contribution" -> "${guild.contribution}"
-                        "selfcontribution" -> "${member.contribution}"
-                        "career" -> member.career.display
-                        "motd_0" -> {
-                            val motd = guild.motd.split("\n")
-                            motd.getOrElse(0) { "" }
-                        }
-                        "motd_1" -> {
-                            val motd = guild.motd.split("\n")
-                            motd.getOrElse(1) { "" }
-                        }
-                        "motd_2" -> {
-                            val motd = guild.motd.split("\n")
-                            motd.getOrElse(2) { "" }
-                        }
-                        "motd_3" -> {
-                            val motd = guild.motd.split("\n")
-                            motd.getOrElse(3) { "" }
-                        }
-                        else -> ""
+        object : EZPlaceholderHook(this, "guildhome") {
+            override fun onPlaceholderRequest(p: Player, params: String): String? {
+                val member = GuildConfig.cache[p.uniqueId] as? Member ?: return ""
+                val guild = GuildConfig.guilds[member.gid] ?: return ""
+                return when (params) {
+                    "name" -> {
+                        guild.name
                     }
+                    "president" -> {
+                        guild.realName
+                                ?: ""
+                    }
+                    "level" -> "${guild.level}"
+                    "size" -> "${guild.memberSize}"
+                    "score" -> "${guild.score}"
+                    "contribution" -> "${guild.contribution}"
+                    "selfcontribution" -> "${member.contribution}"
+                    "career" -> member.career.display
+                    "motd_0" -> {
+                        val motd = guild.motd.split("\n")
+                        motd.getOrElse(0) { "" }
+                    }
+                    "motd_1" -> {
+                        val motd = guild.motd.split("\n")
+                        motd.getOrElse(1) { "" }
+                    }
+                    "motd_2" -> {
+                        val motd = guild.motd.split("\n")
+                        motd.getOrElse(2) { "" }
+                    }
+                    "motd_3" -> {
+                        val motd = guild.motd.split("\n")
+                        motd.getOrElse(3) { "" }
+                    }
+                    else -> ""
                 }
-            }.hook()
-        }
+            }
+        }.hook()
+
     }
 
     fun connectSQL() {
@@ -111,7 +115,8 @@ class BukkitMain : JavaPlugin() {
     }
 
     override fun onDisable() {
-        // Plugin shutdown logic
+        Loot.save()
+        Exp.save()
     }
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {

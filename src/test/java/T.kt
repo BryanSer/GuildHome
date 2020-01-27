@@ -1,15 +1,27 @@
 import com.github.bryanser.guildhome.StringManager
 import com.github.bryanser.guildhome.database.Career
-import com.github.bryanser.guildhome.transform.DataTransform
-import com.github.bryanser.guildhome.transform.Transform
-import com.google.gson.Gson
+import org.bukkit.configuration.file.YamlConfiguration
 import org.junit.Assert
 import org.junit.Ignore
 import org.junit.Test
-import java.io.Serializable
+import java.io.File
 
 @Ignore
 class T {
+
+    @Test
+    fun testYaml(){
+        val f = File("test.yml")
+        val cfg = YamlConfiguration()
+        val list = mutableListOf<Map<String,Any>>()
+        list += mapOf("test" to 1,"test2" to 2L,"value" to "v")
+        cfg.set("data",list)
+        cfg.save(f)
+
+        val config = YamlConfiguration.loadConfiguration(f)
+        val data = (config.get("data") as List<*>)[0] as Map<String,Any>
+        println(data)
+    }
 
     @Test
     fun testJson() {

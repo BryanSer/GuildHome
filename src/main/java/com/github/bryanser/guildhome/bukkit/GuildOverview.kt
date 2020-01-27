@@ -13,6 +13,7 @@ import org.bukkit.Material
 import org.bukkit.entity.Player
 
 object GuildOverview {
+    const val MAX_PAGE = 10
     class GuildOverviewContext(p: Player) : KViewContext(
             "§3§l楼楼公会列表"
     ) {

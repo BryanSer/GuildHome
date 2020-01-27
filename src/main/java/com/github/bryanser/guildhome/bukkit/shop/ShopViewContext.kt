@@ -21,7 +21,7 @@ import org.bukkit.inventory.ItemStack
 import java.io.File
 import java.lang.IllegalStateException
 
-class ShopViewContext(p: Player) : KViewContext(title) {
+class ShopViewContext(p: Player, val page: Int) : KViewContext(title) {
     @Volatile
     var init = false
     lateinit var guild: Guild
@@ -29,7 +29,7 @@ class ShopViewContext(p: Player) : KViewContext(title) {
 
     fun laterReload(p: Player, later: Long) {
         init = false
-        Bukkit.getScheduler().runTaskLater(BukkitMain.Plugin, { reload(p) }, later)
+        Bukkit.getScheduler().runTaskLater(BukkitMain.Plugin, { KViewHandler.openUI(player, views[page]) }, later)
     }
 
     init {
@@ -59,6 +59,7 @@ class ShopViewContext(p: Player) : KViewContext(title) {
     companion object {
         lateinit var title: String
         lateinit var views: Array<KView<ShopViewContext>>
+        val items = mutableMapOf<Int,Item>()
 
         var hasShop = false
         fun loadShop() {
@@ -66,6 +67,7 @@ class ShopViewContext(p: Player) : KViewContext(title) {
             if (!f.exists()) {
                 Utils.saveResource(BukkitMain.Plugin, "shop.yml")
             }
+            items.clear()
             val config = YamlConfiguration.loadConfiguration(f)
             val setting = config.getConfigurationSection("Setting")
             title = ChatColor.translateAlternateColorCodes('&', setting.getString("title"))
@@ -74,7 +76,7 @@ class ShopViewContext(p: Player) : KViewContext(title) {
             val contents = config.getConfigurationSection("Contents")
             views = Array(maxPage) {
                 val viewPage = it
-                KViewHandler.createKView("GuildHome Shop $viewPage", 6, ::ShopViewContext) {
+                KViewHandler.createKView("GuildHome Shop $viewPage", 6, { ShopViewContext(it, viewPage) }) {
                     for (i in 0..44) {
                         val index = i + viewPage * 45
                         if (contents.contains("$index")) {
@@ -82,6 +84,7 @@ class ShopViewContext(p: Player) : KViewContext(title) {
                             val type = sub.getString("Type")
                             val con = Item.items[type] ?: continue
                             val item = con(sub)
+                            items[index] = item
                             +index += item.build(this)
                         }
                     }

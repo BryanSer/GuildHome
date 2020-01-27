@@ -10,7 +10,7 @@ object GuildManager {
     fun getAllGuild(): List<GuildInfo> {
         val guilds = mutableListOf<GuildInfo>()
         DatabaseHandler.sql {
-            val ps = this.prepareStatement("SELECT * FROM V_Guild")
+            val ps = this.prepareStatement("SELECT * FROM V_GuildWithName")
             val rs = ps.executeQuery()
             while (rs.next()) {
                 guilds += GuildInfo(
@@ -22,7 +22,8 @@ object GuildManager {
                         rs.getInt(6),
                         rs.getString(7),
                         rs.getString(8),
-                        rs.getInt(9)
+                        rs.getInt(9),
+                        rs.getString(10)
                 )
             }
         }
@@ -66,14 +67,16 @@ object GuildManager {
         var r: Member? = null
         DatabaseHandler.sql {
             val ps = this.prepareStatement(
-                    "SELECT * FROM ${DatabaseHandler.TABLE_GUILD_MEMBER} WHERE NAME = ? LIMIT 1"
+                    "SELECT * FROM V_MEMBER WHERE UUID = ? LIMIT 1"
             )
             ps.setString(1, uuid.toString())
             val rs = ps.executeQuery()
             if (rs.next()) {
                 val id = rs.getInt("GID")
                 val career = Career.valueOf(rs.getString("CAREER"))
-                r = Member(uuid, id, career, rs.getInt("CONTRIBUTION"))
+                val con = rs.getInt("CONTRIBUTION")
+                val name: String? = rs.getString("NAME")
+                r = Member(uuid, id, career, con, name)
             }
         }
         return r
@@ -82,14 +85,15 @@ object GuildManager {
     fun getMembers(gid: Int): List<Member> {
         val list = mutableListOf<Member>()
         DatabaseHandler.sql {
-            val ps = this.prepareStatement("SELECT * FROM ${DatabaseHandler.TABLE_GUILD_MEMBER} WHERE GID = ? ORDER BY CONTRIBUTION DESC")
+            val ps = this.prepareStatement("SELECT * FROM V_MEMBER WHERE GID = ? ORDER BY CONTRIBUTION DESC")
             ps.setInt(1, gid)
             val rs = ps.executeQuery()
             while (rs.next()) {
-                val uuid = UUID.fromString(rs.getString("NAME"))
-                val id = rs.getInt("GID")
+                val uuid = UUID.fromString(rs.getString("UUID"))
                 val career = Career.valueOf(rs.getString("CAREER"))
-                list += Member(uuid, id, career, rs.getInt("CONTRIBUTION"))
+                val con = rs.getInt("CONTRIBUTION")
+                val name: String? = rs.getString("NAME")
+                list += Member(uuid, gid, career, con, name)
             }
         }
         return list
@@ -132,7 +136,7 @@ object GuildManager {
     fun getApplySize(gid: Int): Int {
         var size = 0
         DatabaseHandler.sql {
-            val ps = this.prepareStatement("SELECT COUNT(*) FROM ${DatabaseHandler.TABLE_GUILD_APPLY} WHERE GID = ?")
+            val ps = this.prepareStatement("SELECT COUNT(*) FROM V_APPLY WHERE GID = ?")
             ps.setInt(1, gid)
             val rs = ps.executeQuery()
             if (rs.next()) {
@@ -142,14 +146,20 @@ object GuildManager {
         return size
     }
 
-    fun getApplys(gid: Int): List<Pair<UUID, Long>> {
-        val list = mutableListOf<Pair<UUID, Long>>()
+    data class ApplyInfo(
+            val uuid: UUID,
+            val time: Long,
+            val name: String?
+    )
+
+    fun getApplys(gid: Int): List<ApplyInfo> {
+        val list = mutableListOf<ApplyInfo>()
         DatabaseHandler.sql {
-            val ps = this.prepareStatement("SELECT * FROM ${DatabaseHandler.TABLE_GUILD_APPLY} WHERE GID = ?")
+            val ps = this.prepareStatement("SELECT * FROM V_APPLY WHERE GID = ?")
             ps.setInt(1, gid)
             val rs = ps.executeQuery()
             while (rs.next()) {
-                list += UUID.fromString(rs.getString("NAME")) to rs.getLong("TIME")
+                list += ApplyInfo(UUID.fromString(rs.getString("UUID")), rs.getLong("TIME"), rs.getString("NAME"))
             }
         }
         return list

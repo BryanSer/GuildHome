@@ -3,6 +3,7 @@ package com.github.bryanser.guildhome.bukkit
 import com.avaje.ebean.annotation.EnumValue
 import com.github.bryanser.brapi.Utils
 import com.github.bryanser.guildhome.*
+import com.github.bryanser.guildhome.bukkit.shop.Exp
 import com.github.bryanser.guildhome.database.UserName
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
@@ -22,7 +23,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 object GuildConfig : Listener {
     val costItem = mutableMapOf<Int, Cost>()
 
-    lateinit var protectedWorlds: MutableList<String>
+    lateinit var protectedWorlds: List<String>
 
     var create_cost: Double = 1000.0
     val cache = ConcurrentHashMap<UUID, IMember>()
@@ -32,16 +33,31 @@ object GuildConfig : Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onDamage(evt: EntityDamageByEntityEvent) {
-        if (protectedWorlds.isEmpty()) {
-            return
-        }
         val p = evt.entity as? Player ?: return
         val d = evt.damager as? Player ?: return
-        if (!protectedWorlds.contains(p.world.name)) {
+        if (protectedWorlds.isEmpty()) {
+            if (Exp.DEBUG) {
+                Bukkit.broadcastMessage("§c配置中的protectedWorlds为空 已跳过同公会伤害监测")
+            }
             return
+        }
+        if (Exp.DEBUG) {
+            Bukkit.broadcastMessage("§cDEBUG: 检查世界设定")
+        }
+        if (!protectedWorlds.contains(p.world.name)) {
+            if (Exp.DEBUG) {
+                Bukkit.broadcastMessage("§cDEBUG: 当前伤害并不是位于配置指定的世界")
+            }
+            return
+        }
+        if (Exp.DEBUG) {
+            Bukkit.broadcastMessage("§cDEBUG: 尝试读取双方公会信息")
         }
         val pm = cache[p.uniqueId] as? Member ?: return
         val dm = cache[d.uniqueId] as? Member ?: return
+        if (Exp.DEBUG) {
+            Bukkit.broadcastMessage("§cDEBUG: 读取成功 pm:${pm.gid} dm:${dm.gid}")
+        }
         if (pm.gid == dm.gid) {
             evt.isCancelled = true
             d.sendMessage("§e§l你不能攻击和你相同公会的人哦")
@@ -50,9 +66,7 @@ object GuildConfig : Listener {
 
     @EventHandler
     fun onJoin(evt: PlayerJoinEvent) {
-        Bukkit.getScheduler().runTaskAsynchronously(BukkitMain.Plugin) {
-            UserName[evt.player.uniqueId] = evt.player.name
-        }
+        UserName[evt.player.uniqueId] = evt.player.name
     }
 
     fun init() {

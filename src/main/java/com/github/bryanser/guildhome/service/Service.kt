@@ -92,7 +92,7 @@ abstract class Service(
             return str.toString()
         }
 
-        fun authJson(json: String): Map<String, Any>? {
+        fun authJson(json: String, check: Boolean = true): Map<String, Any>? {
             val jdata = StringManager.fromJson(json)
             val data = jdata["data"] as Map<String, Any>
             val sign = jdata["sign"] as String
@@ -102,7 +102,7 @@ abstract class Service(
                 println("DEBUG-签名校验 传入签名: ${sign}")
                 println("DEBUG-签名校验 原始签名: ${rsign}")
             }
-            if (rsign != sign) {
+            if (check && rsign != sign) {
                 return null
             }
             return data

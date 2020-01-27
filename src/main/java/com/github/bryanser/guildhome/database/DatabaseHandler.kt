@@ -96,14 +96,41 @@ object DatabaseHandler {
             """)
             try {
                 sta.execute("""
+                CREATE VIEW V_APPLY(UUID, GID, TIME, NAME) AS(
+                    SELECT GuildApply.NAME, GuildApply.GID, GuildApply.TIME, GuildUserName.NAME
+                    FROM GuildApply,GuildUserName WHERE GuildApply.NAME = GuildUserName.UUID
+                ) 
+                """)
+                sta.execute("""
+                CREATE VIEW V_MEMBER(UUID, GID, CAREER, CONTRIBUTION, NAME) AS(
+                    SELECT GuildMember.NAME, GuildMember.GID, GuildMember.CAREER,GuildMember.CONTRIBUTION, GuildUserName.NAME
+                    FROM GuildMember,GuildUserName WHERE GuildMember.NAME = GuildUserName.UUID
+                ) 
+                """)
+                sta.execute("""
+                INSERT INTO GuildUserName (UUID, NAME) SELECT GuildMember.NAME, NULL FROM GuildMember 
+                    WHERE GuildMember.NAME NOT IN (SELECT UUID FROM GuildUserName)
+                """)
+                sta.execute("""
                 CREATE VIEW V_GuildSize(GID, SIZE) AS(
                     SELECT GuildMember.GID,COUNT(*) FROM GuildMember GROUP BY GID
                 )
                 """)
+            } catch (e: Throwable) {
+            }
+            try {
                 sta.execute("""
-                CREATE VIEW V_Guild(GID, GUILD_NAME, MEMBER_NAME, LEVEL, GUILD_CONTRIBUTION, SIZE, ICON, MOTD, SCORE) AS(
-                    SELECT GuildHome.ID, GuildHome.NAME, GuildMember.NAME, GuildHome.LEVEL, GuildHome.CONTRIBUTION, V_GuildSize.SIZE, GuildHome.ICON, GuildHome.MOTD, (GuildHome.LEVEL * 100 + GuildHome.CONTRIBUTION + V_GuildSize.SIZE * 500) AS SCORE
-                    FROM GuildMember, GuildHome, V_GuildSize WHERE GuildHome.ID = GuildMember.GID AND V_GuildSize.GID = GuildMember.GID AND GuildMember.CAREER = 'PRESIDENT' ORDER BY SCORE DESC
+                INSERT INTO GuildUserName (UUID, NAME) SELECT GuildApply.NAME, NULL FROM GuildApply 
+                    WHERE GuildApply.NAME NOT IN (SELECT UUID FROM GuildUserName)
+                """)
+            } catch (e: Throwable) {
+            }
+            try {
+                sta.execute("""
+                CREATE VIEW V_GuildWithName(GID, GUILD_NAME, MEMBER_NAME, LEVEL, GUILD_CONTRIBUTION, SIZE, ICON, MOTD, SCORE, REALNAME) AS(
+                    SELECT GuildHome.ID, GuildHome.NAME, V_MEMBER.UUID, GuildHome.LEVEL, GuildHome.CONTRIBUTION, V_GuildSize.SIZE, GuildHome.ICON, GuildHome.MOTD, (GuildHome.LEVEL * 100 + GuildHome.CONTRIBUTION + V_GuildSize.SIZE * 500) AS SCORE
+                    , V_MEMBER.NAME
+                    FROM V_MEMBER, GuildHome, V_GuildSize WHERE GuildHome.ID = V_MEMBER.GID AND V_GuildSize.GID = V_MEMBER.GID AND V_MEMBER.CAREER = 'PRESIDENT' ORDER BY SCORE DESC
                 )
                 """)
             } catch (e: Throwable) {

@@ -35,6 +35,8 @@ object GuildView {
     const val VP_NUM = 1
     const val MANANGER_NUM = 2
 
+    const val MAX_PAGE = 10
+
     val defaultIcon: ItemStack = ItemBuilder.createItem(Material.DIAMOND) {}
         get() = field.clone()
     val unready: ItemStack = ItemBuilder.createItem(Material.STAINED_GLASS_PANE) {
@@ -67,12 +69,13 @@ object GuildView {
         val managerSize: Int
             get() = (members[Career.MANAGER]?.size ?: 0) + vpSize
 
+        @Volatile
         var applySize: Int = 0
 
         fun laterReload(p: Player, later: Long) {
             ignoreClick = true
             init = false
-            Bukkit.getScheduler().runTaskLater(BukkitMain.Plugin, { reload(p) }, later)
+            Bukkit.getScheduler().runTaskLater(BukkitMain.Plugin, { KViewHandler.openUI(player, view) }, later)
         }
 
         fun calcIndex(i: Int): Pair<Int, Career> {
@@ -213,8 +216,7 @@ object GuildView {
                         val (index, career) = calcIndex(i)
                         val m = members[career]?.getOrNull(index) ?: return@display null
                         ItemBuilder.createItem(Material.SKULL_ITEM, durability = 3) {
-                            val p = UserName(m.uuid)
-                            name("${m.career.display}: ${p}")
+                            name("${m.career.display}: ${m.name}")
                             lore {
                                 +"§6§l该玩家贡献值: §a§l${m.contribution}"
                                 if (self.career > m.career) {
@@ -236,7 +238,7 @@ object GuildView {
                             }
                             onBuild {
                                 val im = itemMeta as SkullMeta
-                                im.owner = p ?: return@onBuild this
+                                im.owner = m.name ?: return@onBuild this
                                 itemMeta = im
                                 this
                             }
@@ -258,7 +260,6 @@ object GuildView {
                         if (self.career <= m.career) {
                             return@number
                         }
-                        val p = UserName(m.uuid)
                         if (self.career == Career.PRESIDENT && num == VP_NUM) {
                             if (m.career == Career.VP) {
                                 player.sendMessage("§4§l你正在撤销对方的副会长职位")
@@ -287,7 +288,7 @@ object GuildView {
                         } else if (num == KICK_NUM) {
                             BroadcastMessageService.broadcast(guild.id, player,
                                     "§6========§c[公会公告]§6========",
-                                    "§a§l公会的 ${p} §b§l已被 ${player.name} §c§l踢出了公会"
+                                    "§a§l公会的 ${m.name} §b§l已被 ${player.name} §c§l踢出了公会"
                             )
                             KickMemberService.kick(guild.id, m.uuid, player)
                         } else {
@@ -521,14 +522,14 @@ object GuildView {
                     name("§6§l下一页")
                 }
                 initDisplay {
-                    if (page < 2) {
+                    if (page < MAX_PAGE) {
                         next
                     } else {
                         null
                     }
                 }
                 click {
-                    if (page < 2) {
+                    if (page < MAX_PAGE) {
                         page++
                     }
                 }
@@ -540,7 +541,7 @@ object GuildView {
     class GuildApplyContext(p: Player) : KViewContext("§6§l公会申请列表") {
         @Volatile
         var init: Boolean = false
-        val apply = mutableListOf<Pair<UUID, Long>>()
+        val apply = mutableListOf<GuildManager.ApplyInfo>()
         var page: Int = 0
         var ignoreClick = true
         lateinit var guild: Guild
@@ -548,7 +549,13 @@ object GuildView {
         fun laterReload(p: Player, later: Long) {
             ignoreClick = true
             init = false
-            Bukkit.getScheduler().runTaskLater(BukkitMain.Plugin, { reload(p) }, later)
+
+            Bukkit.getScheduler().runTaskLater(BukkitMain.Plugin, { KViewHandler.openUI(player, applyView) }, later)
+//            Bukkit.getScheduler().runTaskLater(BukkitMain.Plugin, object: Runnable{
+//                override fun run() {
+//                    reload(p)
+//                }
+//            }, later)
         }
 
         init {
@@ -596,8 +603,7 @@ object GuildView {
             for (i in 0 until 45) {
                 icon(i) {
                     display2 {
-                        val (uuid, time) = apply.getOrNull(i + page * 45) ?: return@display2 null
-                        val p = UserName(uuid)
+                        val (uuid, time,p) = apply.getOrNull(i + page * 45) ?: return@display2 null
                         ItemBuilder.createItem(Material.SKULL_ITEM, durability = 3) {
                             name("§a§l玩家: ${p ?: "§6§l找不到名字"}")
                             lore {
@@ -660,14 +666,14 @@ object GuildView {
                     name("§6§l下一页")
                 }
                 initDisplay {
-                    if (page < 2) {
+                    if (page < MAX_PAGE) {
                         next
                     } else {
                         null
                     }
                 }
                 click {
-                    if (page < 2) {
+                    if (page < MAX_PAGE) {
                         page++
                     }
                 }

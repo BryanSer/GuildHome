@@ -14,7 +14,7 @@ class BukkitListener : PluginMessageListener {
         if (Service.DEBUG) {
             Bukkit.getLogger().info("接收信道信息: $str")
         }
-        val data = Service.authJson(str)
+        val data = Service.authJson(str, false)
         if (data == null) {
             Bukkit.getLogger().warning("[警告] 有试图传入未经签名的通信信息, from player:${player?.name}")
             return

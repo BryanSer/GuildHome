@@ -7,7 +7,8 @@ data class Member(
         val uuid: UUID,
         val gid: Int,
         val career: Career,
-        val contribution: Int
+        val contribution: Int,
+        val name:String?
 ) : IMember
 
 interface IMember
