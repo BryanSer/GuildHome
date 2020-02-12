@@ -31,8 +31,6 @@ object ApplyMemberService : Service(
             if (accept) {
                 val s = GuildManager.apply(gid, target, BungeeMain.Plugin.proxy.getPlayer(target)?.name
                         ?: "")
-
-
                 p.sendSyncMsg(s)
                 if (msg) {
                     if (s != "§c请求处理失败: §e对方已经加入了别的公会") {
