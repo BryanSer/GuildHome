@@ -6,7 +6,7 @@
 
     <groupId>com.github.bryanser</groupId>
     <artifactId>GuildHome</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.3</version>
     <packaging>jar</packaging>
 
     <name>GuildHome</name>
@@ -118,6 +118,12 @@
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>br.bukkit</groupId>
+            <artifactId>WeLore</artifactId>
+            <version>1.0.1</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>

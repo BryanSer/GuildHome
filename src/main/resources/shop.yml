@@ -7,12 +7,43 @@ Setting:
 Contents:
     #0号位 表示第一行第一个 一页只有45个 45号位为第二页第一个
     '0':
-        #图标类型
-        #目前有以下类型可选
-        #ICON 图标: 只能看 不能点击 用于装饰商店
-        #EXP 经验加成商品
-        Type: ICON
-        Display: '160 1 5 Name:&a装饰用绿色玻璃板'
+        Type: WeLore
+        Display: '160 1 5 Name:&a属性加成'
+        Config:
+            time: 10.0
+            attribute:
+                Damage: 20
+                PlayerDamage: 10
+            allGuild: true
+            cost:
+                level: 2
+                contribution: 100
+            #购买后的信息
+            message:
+                - '&a你成功购买了公会属性加成'
+            #购买后的公告
+            broadcast:
+                - '&b公会会长%player%刚刚购买了公会属性加成'
+            power: 100
+    '3':
+        Type: Buff
+        Display: '160 1 5 Name:&a属性加成'
+        Config:
+            time: 10.0
+            #药水id|等级
+            buff:
+                - '1|1'
+            allGuild: true
+            cost:
+                level: 2
+                contribution: 100
+            #购买后的信息
+            message:
+                - '&a你成功购买了公会药水加成'
+            #购买后的公告
+            broadcast:
+                - '&b公会会长%player%刚刚购买了公会药水加成'
+            power: 100
     '2':
         Type: LOOT
         Display: '384 1 0 Name:&6掉落加成'

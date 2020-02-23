@@ -4,6 +4,7 @@ main: com.github.bryanser.guildhome.bukkit.BukkitMain
 depend: [BrAPI,ProtocolLib]
 softdepend:
     - PlaceholderAPI
+    - WeLore
 commands:
     GuildHome:
         aliases: [gh]

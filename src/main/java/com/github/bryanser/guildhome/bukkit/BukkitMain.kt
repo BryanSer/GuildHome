@@ -4,9 +4,7 @@ import Br.API.CallBack
 import com.github.bryanser.brapi.Utils
 import com.github.bryanser.brapi.kview.KViewHandler
 import com.github.bryanser.guildhome.*
-import com.github.bryanser.guildhome.bukkit.shop.Exp
-import com.github.bryanser.guildhome.bukkit.shop.Loot
-import com.github.bryanser.guildhome.bukkit.shop.ShopViewContext
+import com.github.bryanser.guildhome.bukkit.shop.*
 import com.github.bryanser.guildhome.database.Career
 import com.github.bryanser.guildhome.database.DatabaseHandler
 import com.github.bryanser.guildhome.database.UserName
@@ -41,6 +39,8 @@ class BukkitMain : JavaPlugin() {
         ShopViewContext.loadShop()
         Loot.load()
         Exp.load()
+        WeLore.load()
+        Buff.load()
     }
 
     fun register() {
@@ -117,6 +117,8 @@ class BukkitMain : JavaPlugin() {
     override fun onDisable() {
         Loot.save()
         Exp.save()
+        WeLore.save()
+        Buff.save()
     }
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
