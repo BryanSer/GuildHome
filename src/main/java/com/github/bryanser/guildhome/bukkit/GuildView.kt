@@ -80,20 +80,25 @@ object GuildView {
 
         fun calcIndex(i: Int): Pair<Int, Career> {
             var index = i + page * 36
-            val career = when (i) {
-                0 -> Career.PRESIDENT
-                in 1 until vpSize -> {
-                    index--
-                    Career.VP
+            val career = if(page == 0) {
+                when (i) {
+                    0 -> Career.PRESIDENT
+                    in 1 until vpSize -> {
+                        index--
+                        Career.VP
+                    }
+                    in vpSize until managerSize -> {
+                        index -= vpSize
+                        Career.MANAGER
+                    }
+                    else -> {
+                        index -= managerSize
+                        Career.MEMBER
+                    }
                 }
-                in vpSize until managerSize -> {
-                    index -= vpSize
-                    Career.MANAGER
-                }
-                else -> {
-                    index -= managerSize
-                    Career.MEMBER
-                }
+            } else{
+                index -= managerSize
+                Career.MEMBER
             }
             return index to career
         }
@@ -312,6 +317,7 @@ object GuildView {
                 click {
                     if (page > 0) {
                         page--
+                        KViewHandler.updateUI(player)
                     }
                 }
             }
@@ -531,6 +537,7 @@ object GuildView {
                 click {
                     if (page < MAX_PAGE) {
                         page++
+                        KViewHandler.updateUI(player)
                     }
                 }
             }
