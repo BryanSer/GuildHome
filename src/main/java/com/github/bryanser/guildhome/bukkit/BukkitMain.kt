@@ -3,11 +3,12 @@ package com.github.bryanser.guildhome.bukkit
 import Br.API.CallBack
 import com.github.bryanser.brapi.Utils
 import com.github.bryanser.brapi.kview.KViewHandler
-import com.github.bryanser.guildhome.*
+import com.github.bryanser.guildhome.Channel
+import com.github.bryanser.guildhome.GuildManager
+import com.github.bryanser.guildhome.Member
 import com.github.bryanser.guildhome.bukkit.shop.*
 import com.github.bryanser.guildhome.database.Career
 import com.github.bryanser.guildhome.database.DatabaseHandler
-import com.github.bryanser.guildhome.database.UserName
 import com.github.bryanser.guildhome.service.BukkitListener
 import com.github.bryanser.guildhome.service.Service
 import com.github.bryanser.guildhome.service.impl.ApplyMemberService
@@ -23,9 +24,6 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CopyOnWriteArrayList
 
 class BukkitMain : JavaPlugin() {
 
@@ -83,7 +81,15 @@ class BukkitMain : JavaPlugin() {
                         val motd = guild.motd.split("\n")
                         motd.getOrElse(3) { "" }
                     }
-                    else -> ""
+                    else -> {
+                        val str = params.split("_")
+                        if (str[0].equals("time")) {
+                            val index = str[1].toInt()
+                            val item = ShopViewContext.items[index] ?: return "未找到物品"
+                            return  item.info(guild.gid) ?: "本公会未开启此加成效果"
+                        }
+                        return ""
+                    }
                 }
             }
         }.hook()

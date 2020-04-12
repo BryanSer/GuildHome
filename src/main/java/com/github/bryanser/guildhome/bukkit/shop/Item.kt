@@ -1,5 +1,6 @@
 package com.github.bryanser.guildhome.bukkit.shop
 
+import Br.API.Utils
 import com.github.bryanser.brapi.kview.KIcon
 import com.github.bryanser.brapi.kview.builder.KViewBuilder
 import me.clip.placeholderapi.PlaceholderAPI
@@ -27,19 +28,34 @@ abstract class Item(
         display = loadDisplay(config)
     }
 
+
     open fun loadDisplay(config: ConfigurationSection): (ShopViewContext) -> ItemStack? {
         val dis = config.getString("Display")!!
-        return d@{
-            val str = papi(dis, it.player).replace("%%", "%")
-//            Bukkit.getLogger().info("替换后信息: $str")
-            readItemStack(str)
+        val item = Utils.readItemStack(dis)
+        return d@{t->
+            val i = item.clone()
+            if(i.hasItemMeta()){
+                val im = i.itemMeta
+                if(im.hasDisplayName()){
+                    im.displayName = papi(im.displayName,t.player)
+                }
+                if(im.hasLore()){
+                    im.lore = im.lore.map{
+                        papi(it,t.player)
+                    }
+                }
+                i.itemMeta = im
+            }
+            i
         }
     }
+
+    abstract fun info(gid: Int): String?
 
     abstract fun build(view: KViewBuilder<ShopViewContext>): KIcon<ShopViewContext>
 
     companion object {
-        val PAPIRegEx = Pattern.compile("%[^%]*%")
+        val PAPIRegEx = Pattern.compile("%[^%]+%")
 
         fun papi(t: String, p: Player): String {
             val replace = mutableSetOf<String>()
@@ -81,106 +97,6 @@ abstract class Item(
             items["BUFF"] = ::Buff
         }
 
-        fun readItemStack(s: String): ItemStack? {
-            val item: ItemStack
-            item = try {
-                ItemStack(Material.getMaterial(s.split(" ").toTypedArray()[0].toInt()))
-            } catch (e: NumberFormatException) {
-                ItemStack(Material.getMaterial(s.split(" ").toTypedArray()[0]))
-            }
-            var i = 0
-            for (data in s.split(" ").toTypedArray()) {
-                var data = data
-                if (i == 0) {
-                    i++
-                    continue
-                }
-                if (i == 1) {
-                    try {
-                        item.amount = data.toInt()
-                    } catch (e: NumberFormatException) {
-                        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&c&l在读取物品: $s 时出现错误"))
-                    }
-                    i++
-                    continue
-                }
-                if (i == 2) {
-                    try {
-                        item.durability = data.toShort()
-                    } catch (e: NumberFormatException) {
-                        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&c&l在读取物品: $s 时出现错误"))
-                    }
-                    i++
-                    continue
-                }
-                if (data.toLowerCase().contains("name:")) {
-                    data = data.substring(data.indexOf(":") + 1)
-                    data = ChatColor.translateAlternateColorCodes('&', data)
-                    data = data.replace("_".toRegex(), " ")
-                    val im = item.itemMeta
-                    im.displayName = data
-                    item.itemMeta = im
-                    continue
-                }
-                if (data.toLowerCase().contains("lore:")) {
-                    data = data.substring(data.indexOf(":") + 1)
-                    val lores = data.split("|").toTypedArray()
-                    val LoreList: MutableList<String> = ArrayList()
-                    for (o in lores.indices) {
-                        lores[o] = lores[o].replace("_".toRegex(), " ")
-                        lores[o] = ChatColor.translateAlternateColorCodes('&', lores[o])
-                    }
-                    LoreList.addAll(Arrays.asList(*lores))
-                    val im = item.itemMeta
-                    im.lore = LoreList
-                    item.itemMeta = im
-                    continue
-                }
-                if (data.toLowerCase().contains("hide:")) {
-                    data = data.substring(data.indexOf(":") + 1)
-                    val im = item.itemMeta
-                    for (str in data.split(",").toTypedArray()) {
-                        im.addItemFlags(ItemFlag.valueOf(str))
-                    }
-                    item.itemMeta = im
-                    continue
-                }
-                if (data.toLowerCase().contains("ench:")) {
-                    data = data.substring(data.indexOf(":") + 1)
-                    val str = data.split("-").toTypedArray()
-                    var e: Enchantment? = null
-                    e = try {
-                        Enchantment.getById(str[0].toInt())
-                    } catch (ee: NumberFormatException) {
-                        Enchantment.getByName(str[0])
-                    }
-                    val lv = str[1].toInt()
-                    item.addUnsafeEnchantment(e, lv)
-                }
-                if (data.toLowerCase().contains("color:")) {
-                    data = data.substring(data.indexOf(":") + 1)
-                    if (item.data is Dye) {
-                        val d = item.data as Dye
-                        d.color = DyeColor.valueOf(data)
-                        item.data = d
-                        continue
-                    }
-                    if (item.data is Wool) {
-                        val w = item.data as Wool
-                        w.color = DyeColor.valueOf(data)
-                        item.data = w
-                        continue
-                    }
-                    if (item.itemMeta is LeatherArmorMeta) {
-                        val lam = item.itemMeta as LeatherArmorMeta
-                        lam.color = Color.fromRGB(data.toInt())
-                        item.itemMeta = lam
-                        continue
-                    }
-                }
-            }
-            return item
-        }
     }
 }
 

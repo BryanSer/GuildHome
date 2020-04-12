@@ -42,6 +42,10 @@ class Command(cs: ConfigurationSection) : Item(cs) {
     val cost: Cost = Cost(cs.getConfigurationSection("Config.cost"))
 
 
+    override fun info(gid: Int): String? {
+        return null
+    }
+
     override fun build(view: KViewBuilder<ShopViewContext>): KIcon<ShopViewContext> {
         return view.icon {
             display {

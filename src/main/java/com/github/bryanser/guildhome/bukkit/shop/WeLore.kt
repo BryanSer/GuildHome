@@ -16,6 +16,8 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 class WeLore(cs: ConfigurationSection) : Item(cs) {
     val attribute: MutableMap<String, Double> = hashMapOf()
@@ -100,6 +102,22 @@ class WeLore(cs: ConfigurationSection) : Item(cs) {
                 }
             }
         }
+    }
+
+
+
+    val df = SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss")
+    override fun info(gid: Int): String? {
+        for((g,buf) in buff){
+            if(g == gid){
+                for(ue in buf){
+                    if(ue.index == index){
+                        return "到期时间:_${df.format(Date(ue.endTime))}"
+                    }
+                }
+            }
+        }
+        return null
     }
 
     companion object : Listener {

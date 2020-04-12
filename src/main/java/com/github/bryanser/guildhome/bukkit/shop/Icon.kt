@@ -12,4 +12,8 @@ class Icon(config: ConfigurationSection) : Item(config) {
             }
         }
     }
+
+    override fun info(gid: Int): String? {
+        return null
+    }
 }

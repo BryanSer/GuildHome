@@ -13,6 +13,8 @@ import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 class Loot(cs: ConfigurationSection) : Item(cs) {
 
@@ -31,6 +33,21 @@ class Loot(cs: ConfigurationSection) : Item(cs) {
                 ?: mutableListOf()
         broadcast = config.getStringList("broadcast")?.map { ChatColor.translateAlternateColorCodes('&', it) }?.toTypedArray()
                 ?: arrayOf()
+    }
+
+
+    val df = SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss")
+    override fun info(gid: Int): String? {
+        for ((g, buf) in activing) {
+            if (g == gid) {
+                for (ue in buf) {
+                    if (ue.index == index) {
+                        return "到期时间: ${df.format(Date(ue.endTime))}"
+                    }
+                }
+            }
+        }
+        return null
     }
 
     inner class ActiveLoot(

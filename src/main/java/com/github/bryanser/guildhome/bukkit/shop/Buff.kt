@@ -16,6 +16,8 @@ import org.bukkit.event.Listener
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 class Buff(cs: ConfigurationSection) : Item(cs) {
     val effect: List<PotionEffect>
@@ -36,6 +38,20 @@ class Buff(cs: ConfigurationSection) : Item(cs) {
         val list = buff.getOrPut(gid) { mutableListOf() }
         list += al
         Bukkit.getLogger().info("公会加成: WeLore 读取完毕 为公会$gid 增加加成效果 data: $owner, $leftTime")
+    }
+
+    val df = SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss")
+    override fun info(gid: Int): String? {
+        for((g,buf) in buff){
+            if(g == gid){
+                for(ue in buf){
+                    if(ue.index == index){
+                        return "到期时间: ${df.format(Date(ue.endTime))}"
+                    }
+                }
+            }
+        }
+        return null
     }
 
     inner class UsingEffect(

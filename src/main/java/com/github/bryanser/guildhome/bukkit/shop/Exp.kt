@@ -16,6 +16,8 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerExpChangeEvent
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 class Exp(cs: ConfigurationSection) : Item(cs) {
     val effect: Double
@@ -25,6 +27,22 @@ class Exp(cs: ConfigurationSection) : Item(cs) {
     val cost: Cost
     val message: List<String>
     val broadcast: Array<String>
+
+
+
+    val df = SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss")
+    override fun info(gid: Int): String? {
+        for((g,buf) in buff){
+            if(g == gid){
+                for(ue in buf){
+                    if(ue.index == index){
+                        return "到期时间: ${df.format(Date(ue.endTime))}"
+                    }
+                }
+            }
+        }
+        return null
+    }
 
     fun createUsingExp(
             owner: String,
