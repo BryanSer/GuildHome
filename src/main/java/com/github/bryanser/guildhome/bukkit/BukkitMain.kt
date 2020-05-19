@@ -199,7 +199,7 @@ class BukkitMain : JavaPlugin() {
                                 p.chat("/GuildHome apply ${guild.name}")
                             }
                         } else {
-                            p.sendMessage("§c§l已成功拒绝来自 §b§l${target.name} §c§l的公会邀请")
+                            p.sendMessage("§c§l已成功拒绝来自 §b§l${sender.name} §c§l的公会邀请")
                             sender.sendMessage("§c§l${target.name} §e§l拒绝了你的公会邀请")
                         }
                     }, 30)
